@@ -24,7 +24,7 @@ Prerequisites:
 * FFmpeg (for video recording utilities)
 
 ```bash
-$ git clone --recursive https://github.com/Farama-Foundation/MicroRTS-Py_Tree_Search.git && \
+$ git clone --recursive https://github.com/cgrant73/MicroRTS-Py_Tree_Search.git && \
 cd MicroRTS-Py_Tree_Search
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ~/Miniconda3-latest-Linux-x86_64.sh 
