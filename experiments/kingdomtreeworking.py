@@ -180,7 +180,8 @@ def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
 
 def pathfinding(worker_map, base_map, resource_map, barracks_map):
   #getting base coordinates
-  base_coord = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1][0]
+  coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1]
+  base_coord = coords[0] if coords else None
 
   #making a grid suitable for pathfinding
   parsed_combined_map = []
@@ -773,7 +774,5 @@ def bigBatch(tree_input):
 
 
     stacked_results = torch.stack(results, dim=0)
-    if False:  # Debugging output
-      print("Stacked Results Shape:")
-      print(stacked_results.shape)
+    print(stacked_results.shape)
     return torch.stack(results, dim=0)
