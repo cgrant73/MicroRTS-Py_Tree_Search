@@ -10,7 +10,7 @@
 #SBATCH --gres=gpu:1			# one GPU
 #SBATCH --mail-type=BEGIN,END,FAIL       # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=grantcr@bc.edu # Email for notifications
-#SBATCH --nodelist="g008"		# Fails for g002, cannot allow it to be chosen
+#SBATCH --exclude="g002"		# Fails for g002, cannot allow it to be chosen
 
 module load cuda
 cd /home/grantcr/
