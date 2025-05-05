@@ -25,7 +25,6 @@ Prerequisites:
 
 ```bash
 $ git clone --recursive https://github.com/cgrant73/MicroRTS-Py_Tree_Search.git && \
-cd MicroRTS-Py_Tree_Search
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ~/Miniconda3-latest-Linux-x86_64.sh 
 ```
@@ -39,6 +38,7 @@ conda create -n "urtsenv" python=3.9 ipython
 conda activate urtsenv
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 poetry self add poetry-plugin-shell
+cd MicroRTS-Py_Tree_Search
 poetry install
 # The `poetry install` command above creates a virtual environment for us, in which all the dependencies are installed.
 # We can use `poetry shell` to create a new shell in which this environment is activated. Once we are done working with
