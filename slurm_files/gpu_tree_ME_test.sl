@@ -5,7 +5,7 @@
 #SBATCH --nodes=1                        # Number of nodes
 #SBATCH --ntasks=1 --cpus-per-task=10     # 10 CPU on a single node
 #SBATCH --mem-per-cpu=20g                 # Memory request per CPU
-#SBATCH --partition=medium              # 48h partition
+#SBATCH --partition=short              # >12h partition
 #SBATCH --time=00:05:00                  # Time limit (hrs:min:sec)
 #SBATCH --gres=gpu:1			# one GPU
 #SBATCH --mail-type=BEGIN,END,FAIL       # Mail events (NONE, BEGIN, END, FAIL, ALL)
