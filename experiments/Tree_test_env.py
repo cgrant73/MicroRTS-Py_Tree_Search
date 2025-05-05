@@ -268,8 +268,8 @@ if __name__ == "__main__":
         # Set some random values for testing
 
         # base at (3,3), worker at (4,4) for player 1
-        dummy_input[0:20, 3, 3, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:20, 3, 3, 15] = 1.0  # Base for player 1
+        dummy_input[0:20, 3, 3, 11] = 0.0  # Ownership for player 1
+        dummy_input[0:20, 3, 3, 15] = 0.0  # Base for player 1
         dummy_input[0:20, 3, 3, 9] = 1.0  # Resource for player 1
         dummy_input[0:20, 4, 4, 11] = 1.0  # Ownership for player 1
         dummy_input[0:20, 4, 4, 17] = 1.0  # Worker for player 1
