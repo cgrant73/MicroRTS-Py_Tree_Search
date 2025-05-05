@@ -15,7 +15,7 @@
 module load cuda
 cd /home/grantcr/
 bash 
-cd /home/grantcr/MicroRTS-Py/experiments/
+cd /home/grantcr/MicroRTS-Py_Tree_Search/experiments/
 conda activate urtsenv
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 poetry install
