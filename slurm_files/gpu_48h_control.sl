@@ -27,7 +27,7 @@ poetry shell
 conda activate urtsenv
 poetry shell
 python -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.version.cuda)"
-python ppo_gridnet_large.py\
+python ppo_gridnet_tree.py\
     --seed 0\
     --prod-mode True\
     --num-bot-envs 24\
