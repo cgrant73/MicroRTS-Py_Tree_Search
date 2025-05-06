@@ -702,7 +702,7 @@ def executeTwoTrees(inputs_for_both_trees):
 
     return output_tensor
 
-def bigBatch(tree_input):
+def bigBatch(tree_input, workers = cpu_count):
     owner1, owner2 = tree_input
     scalars1, worker_map1, barracks_map1, resource_map1, base_map1 = owner1
     scalars2, worker_map2, barracks_map2, resource_map2, base_map2 = owner2
@@ -719,7 +719,7 @@ def bigBatch(tree_input):
         ])
 
     # 2) spawn a pool and map
-    with Pool(processes=cpu_count()) as pool:
+    with Pool(processes=workers) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
 
