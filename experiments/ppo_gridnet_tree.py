@@ -633,7 +633,7 @@ if __name__ == "__main__":
     if args.max_eval_workers > 0:
         eval_executor = ThreadPoolExecutor(max_workers=args.max_eval_workers, thread_name_prefix="league-eval-")
 
-    if args.Tree_agent:
+    if args.Tree_Agent:
         agent = Tree_Agent(envs).to(device)
     else:
         agent = Agent(envs).to(device)
