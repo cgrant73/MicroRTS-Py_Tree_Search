@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 
 from kingdomtreeworking import bigBatch
+from kingdomtreeworking import visualize_the_gird
 
 if __name__ == "__main__":
 
@@ -201,7 +202,7 @@ if __name__ == "__main__":
 
             # tree_input is a tuple of (scalars, worker_map, barracks_map, obstacle_map) for each owner
             
-            tree_vector = bigBatch(tree_input)  # (num_envs, tree_output_c)
+            tree_vector = bigBatch(tree_input, workers = 1)  # (num_envs, tree_output_c)
             
 
             tree_output = tree_vector.repeat(self.map_shape[0], self.map_shape[1], 1, 1).permute(2,0,1,3)  # Batch, Height, Width, Channels
@@ -270,9 +271,9 @@ if __name__ == "__main__":
         # Set some random values for testing
 
         # base at (5,5), worker at (4,4) for player 1
-        dummy_input[0:batches, 5, 5, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:batches, 5, 5, 15] = 1.0  # Base for player 1
-        dummy_input[0:batches, 5, 5, 9] = 1.0  # Resource for player 1
+        dummy_input[0:batches, 3, 3, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 3, 3, 15] = 1.0  # Base for player 1
+        dummy_input[0:batches, 3, 3, 9] = 1.0  # Resource for player 1
         dummy_input[0:batches, 4, 4, 11] = 1.0  # Ownership for player 1
         dummy_input[0:batches, 4, 4, 17] = 1.0  # Worker for player 1
 
@@ -285,8 +286,8 @@ if __name__ == "__main__":
         dummy_input[0:batches, 0, 0, 14] = 1.0  # Resource for null player
         dummy_input[0:batches, 1, 0, 10] = 1.0  # Resource for null player
         dummy_input[0:batches, 1, 0, 14] = 1.0  # Resource for null player
-        dummy_input[0:batches, 2, 1, 10] = 1.0  # Resource for null player
-        dummy_input[0:batches, 2, 1, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 2, 2, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 2, 2, 14] = 1.0  # Resource for null player
         dummy_input[0:batches, 15, 15, 10] = 1.0  # Resource for null player
         dummy_input[0:batches, 15, 15, 14] = 1.0  # Resource for null player
         dummy_input[0:batches, 14, 14, 10] = 1.0  # Resource for null player
@@ -322,11 +323,19 @@ if __name__ == "__main__":
         # Test the bigBatch function with dummy input
         print("Shape of dummy input:", dummy_input.shape)
         print("Type of dummy input:", dummy_input.dtype)
-        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input)))
+        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input), workers=1))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
         output = agent.get_action_and_value(dummy_input)
         print("Forward pass successful. Output shape:", output[0].shape)
+
+        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[1]
+        print("worker_map looks like:")
+        print(base_map[0, :, :])
+
+        visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
+
+        
     
     test_agent()  # Test the agent with a dummy input tensor
 

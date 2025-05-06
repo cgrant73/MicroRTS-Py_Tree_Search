@@ -13,8 +13,10 @@ from collections import defaultdict
 import time
 import heapq
 import math
-import torch
+
 from multiprocessing import Pool, cpu_count
+import torch
+import bisect
 
 from collections import deque
 import copy
@@ -572,7 +574,7 @@ def find_t_rush(coord1, coord2):
     x2, y2 = coord2
     return abs(x1 - x2) + abs(y1 - y2)
 
-import bisect
+
 
 def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     # 1) Flatten both trees
@@ -701,7 +703,7 @@ def executeTwoTrees(inputs_for_both_trees):
 
     return output_tensor
 
-def bigBatch(tree_input):
+def bigBatch(tree_input, workers=cpu_count()-1):
     owner1, owner2 = tree_input
     scalars1, worker_map1, barracks_map1, resource_map1, base_map1 = owner1
     scalars2, worker_map2, barracks_map2, resource_map2, base_map2 = owner2
@@ -718,7 +720,7 @@ def bigBatch(tree_input):
         ])
 
     # 2) spawn a pool and map
-    with Pool(processes=cpu_count()) as pool:
+    with Pool(processes=workers) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
 
