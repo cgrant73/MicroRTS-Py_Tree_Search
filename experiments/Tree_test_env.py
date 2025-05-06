@@ -262,43 +262,51 @@ if __name__ == "__main__":
         # Define agent
         agent = Agent()
 
+        batches = 1
+
         # create a dummy input tensor to test the forward pass
-        dummy_input = torch.zeros((20, 16, 16, 29), dtype=torch.float32)  # Batch size of 20, height and width of 16, channels of 29
+        dummy_input = torch.zeros((batches, 16, 16, 29), dtype=torch.float32)  # Batch size of 20, height and width of 16, channels of 29
 
         # Set some random values for testing
 
         # base at (5,5), worker at (4,4) for player 1
-        dummy_input[0:20, 5, 5, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:20, 3, 3, 15] = 1.0  # Base for player 1
-        dummy_input[0:20, 3, 3, 9] = 1.0  # Resource for player 1
-        dummy_input[0:20, 4, 4, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:20, 4, 4, 17] = 1.0  # Worker for player 1
+        dummy_input[0:batches, 5, 5, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 5, 5, 15] = 1.0  # Base for player 1
+        dummy_input[0:batches, 5, 5, 9] = 1.0  # Resource for player 1
+        dummy_input[0:batches, 4, 4, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 4, 4, 17] = 1.0  # Worker for player 1
 
         # attack worker at (8,8) for player 1
-        dummy_input[0:20, 8, 8, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:20, 8, 8, 17] = 1.0  # Worker for player 1
+        dummy_input[0:batches, 8, 8, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 8, 8, 17] = 1.0  # Worker for player 1
 
         # resource at (0,0) and (15,15) for null player
-        dummy_input[0:20, 0, 0, 10] = 1.0  # Resource for null player
-        dummy_input[0:20, 0, 0, 14] = 1.0  # Resource for null player
-        dummy_input[0:20, 15, 15, 10] = 1.0  # Resource for null player
-        dummy_input[0:20, 15, 15, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 0, 0, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 0, 0, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 1, 0, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 1, 0, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 2, 1, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 2, 1, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 15, 15, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 15, 15, 14] = 1.0  # Resource for null player
+        dummy_input[0:batches, 14, 14, 10] = 1.0  # Resource for null player
+        dummy_input[0:batches, 14, 14, 14] = 1.0  # Resource for null player
 
         # heavy unit at (5,7) for player 1
-        dummy_input[0:20, 5, 7, 11] = 1.0  # Ownership for player 1
-        dummy_input[0:20, 5, 7, 19] = 1.0  # Heavy unit for player 1
+        dummy_input[0:batches, 5, 7, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 5, 7, 19] = 1.0  # Heavy unit for player 1
 
         # base at (13,13), worker at (14,14) for player 2
-        dummy_input[0:20, 13, 13, 12] = 1.0  # Ownership for player 2
-        dummy_input[0:20, 13, 13, 15] = 1.0  # Base for player 2
-        dummy_input[0:20, 13, 13, 9] = 1.0  # Resource for player 2
+        dummy_input[0:batches, 13, 13, 12] = 1.0  # Ownership for player 2
+        dummy_input[0:batches, 13, 13, 15] = 1.0  # Base for player 2
+        dummy_input[0:batches, 13, 13, 9] = 1.0  # Resource for player 2
 
-        dummy_input[0:20, 14, 14, 12] = 1.0  # Ownership for player 2
-        dummy_input[0:20, 14, 14, 17] = 1.0  # Worker for player 2
+        dummy_input[0:batches, 14, 14, 12] = 1.0  # Ownership for player 2
+        dummy_input[0:batches, 14, 14, 17] = 1.0  # Worker for player 2
 
         # heavy unit at (10,10) for player 2
-        dummy_input[0:20, 10, 10, 12] = 1.0  # Ownership for player 2
-        dummy_input[0:20, 10, 10, 19] = 1.0  # Heavy unit for player 2
+        dummy_input[0:batches, 10, 10, 12] = 1.0  # Ownership for player 2
+        dummy_input[0:batches, 10, 10, 19] = 1.0  # Heavy unit for player 2
 
         if False:  # Debugging information
             print("Dummy input created with shape:", dummy_input.shape)
@@ -310,6 +318,11 @@ if __name__ == "__main__":
             # print size of encoder output after tree augmentation
             print("Encoder output size after tree augmentation:", agent.encoder(agent.augment_with_tree(dummy_input)).shape)
 
+        print("Testing bigbatch1...")
+        # Test the bigBatch function with dummy input
+        print("Shape of dummy input:", dummy_input.shape)
+        print("Type of dummy input:", dummy_input.dtype)
+        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input)))
 
         # Forward pass through the agent
         output = agent.get_action_and_value(dummy_input)

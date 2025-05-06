@@ -136,6 +136,7 @@ def find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coor
       path = bfs_find_one_worker_path_to_resource(parse_copy_map, worker, resource_coords)
       parse_copy_map[base_coord[0]][base_coord[1]] = 1 #pls go through base
       for resource in resource_coords: #make all resources unwalkcable
+        print("Position of resource: ", resource)
         parse_copy_map[resource[0]][resource[1]] = 0
 
       if not path:
@@ -170,7 +171,7 @@ def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_
   return gold_rates_per_path
 
 def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
-  grid_size = 16
+  grid_size = 4
   for r in range(grid_size):
     row = []
     for c in range(grid_size):
@@ -182,7 +183,7 @@ def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
     print(row)
 
 def pathfinding(worker_map, base_map, resource_map, barracks_map):
-  grid_size = 16
+  grid_size = 4
   #getting base coordinates
   coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1]
   if coords:
