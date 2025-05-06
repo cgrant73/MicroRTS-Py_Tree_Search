@@ -14,7 +14,6 @@ import time
 import heapq
 import math
 import torch
-import torch
 from multiprocessing import Pool, cpu_count
 
 from collections import deque
@@ -136,7 +135,6 @@ def find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coor
       path = bfs_find_one_worker_path_to_resource(parse_copy_map, worker, resource_coords)
       parse_copy_map[base_coord[0]][base_coord[1]] = 1 #pls go through base
       for resource in resource_coords: #make all resources unwalkcable
-        print("Position of resource: ", resource)
         parse_copy_map[resource[0]][resource[1]] = 0
 
       if not path:
