@@ -210,8 +210,7 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
       if worker_map[r][c] >= 1:
         worker_coords.append((r, c))
 
-  #print("\nWorker Coords:")
-  #print(worker_coords)
+
 
   #get resource coords
   resource_coords = []
@@ -219,18 +218,23 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
       for c in range(len(resource_map[r])):
           if resource_map[r][c] == 1:
               resource_coords.append((r, c))
-  #print("\nResource Coords:")
-  #print(resource_coords)
 
-  #finally, get our optimal paths
+  if resource_coords == []: #if no resoruces found, set paths to infinity
+    return [math.inf], [math.inf], base_coord
+
+  #if no workers found, i think this would work without this
+  if worker_coords == []:
+    paths = []
+  else:
+    paths = find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coords, base_coord, resource_coords)
+
+
+
+  #finally, get our optimal paths from base to resources
   bfs_paths = find_all_paths_to_resources(parsed_combined_map, base_coord, resource_coords)
-  #print("\nBFS Paths:")
-  #for path in bfs_paths:
-    #print(path)
 
-  #get current paths
-  #print("\nCurrent Paths:")
-  paths = find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coords, base_coord, resource_coords)
+  #current paths
+  
   #for row in paths:
     #print(row)
 
@@ -614,7 +618,7 @@ def generateForBatch(): #for testing
   work_num = 1
   res_num = 2
   barr_num = 1
-  batch_num = 1000
+  batch_num = 100
 
   # these will hold per‐example tensors
   scalars_user       = []
