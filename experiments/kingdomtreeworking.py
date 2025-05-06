@@ -13,11 +13,8 @@ from collections import defaultdict
 import time
 import heapq
 import math
-
 import torch
 from multiprocessing import Pool, cpu_count
-import torch
-import bisect
 
 from collections import deque
 import copy
@@ -175,10 +172,9 @@ def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_
   return gold_rates_per_path
 
 def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
-  grid_size = 4
-  for r in range(grid_size):
+  for r in range(4):
     row = []
-    for c in range(grid_size):
+    for c in range(4):
         if   worker_map[r][c] == 1:        row.append("👨🏻")
         elif base_map[r][c]   == 1:        row.append("🏠")
         elif resource_map[r][c]== 1:       row.append("❇️")
@@ -187,7 +183,6 @@ def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
     print(row)
 
 def pathfinding(worker_map, base_map, resource_map, barracks_map):
-  grid_size = 4
   #getting base coordinates
   coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1]
   if coords:
@@ -197,9 +192,9 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 
   #making a grid suitable for pathfinding
   parsed_combined_map = []
-  for r in range(grid_size):
+  for r in range(len(worker_map)):
     row = []
-    for c in range(grid_size):
+    for c in range(len(worker_map[r])):
       row.append(0 if (barracks_map[r][c] == 1) else 1)
     parsed_combined_map.append(row)
 
@@ -212,8 +207,8 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 
   #get worker coords
   worker_coords = []
-  for r in range(grid_size):
-    for c in range(grid_size):
+  for r in range(len(worker_map)):
+    for c in range(len(worker_map[r])):
       if worker_map[r][c] >= 1:
         worker_coords.append((r, c))
 
@@ -578,7 +573,7 @@ def find_t_rush(coord1, coord2):
     x2, y2 = coord2
     return abs(x1 - x2) + abs(y1 - y2)
 
-
+import bisect
 
 def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     # 1) Flatten both trees
@@ -707,7 +702,7 @@ def executeTwoTrees(inputs_for_both_trees):
 
     return output_tensor
 
-def bigBatch(tree_input, workers=cpu_count()-1):
+def bigBatch(tree_input):
     owner1, owner2 = tree_input
     scalars1, worker_map1, barracks_map1, resource_map1, base_map1 = owner1
     scalars2, worker_map2, barracks_map2, resource_map2, base_map2 = owner2
@@ -724,7 +719,11 @@ def bigBatch(tree_input, workers=cpu_count()-1):
         ])
 
     # 2) spawn a pool and map
-    with Pool(processes=workers) as pool:
+    with Pool(processes=cpu_count()) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
+
+
+    stacked_results = torch.stack(results, dim=0)
+    print(stacked_results.shape)
     return torch.stack(results, dim=0)
