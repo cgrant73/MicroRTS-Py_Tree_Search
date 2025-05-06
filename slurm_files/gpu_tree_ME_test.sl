@@ -3,7 +3,7 @@
 #SBATCH --output=output/%x_%j.txt             # Output file
 #SBATCH --error=error/%x_%j.txt               # Error file
 #SBATCH --nodes=1                        # Number of nodes
-#SBATCH --ntasks=1 --cpus-per-task=10     # 10 CPU on a single node
+#SBATCH --ntasks=1 --cpus-per-task=1     # 10 CPU on a single node
 #SBATCH --mem-per-cpu=20g                 # Memory request per CPU
 #SBATCH --partition=short              # >12h partition
 #SBATCH --time=00:05:00                  # Time limit (hrs:min:sec)
