@@ -170,9 +170,10 @@ def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_
   return gold_rates_per_path
 
 def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
-  for r in range(4):
+  grid_size = 16
+  for r in range(grid_size):
     row = []
-    for c in range(4):
+    for c in range(grid_size):
         if   worker_map[r][c] == 1:        row.append("👨🏻")
         elif base_map[r][c]   == 1:        row.append("🏠")
         elif resource_map[r][c]== 1:       row.append("❇️")
@@ -181,6 +182,7 @@ def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
     print(row)
 
 def pathfinding(worker_map, base_map, resource_map, barracks_map):
+  grid_size = 16
   #getting base coordinates
   coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1]
   if coords:
@@ -190,9 +192,9 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 
   #making a grid suitable for pathfinding
   parsed_combined_map = []
-  for r in range(4):
+  for r in range(grid_size):
     row = []
-    for c in range(4):
+    for c in range(grid_size):
       row.append(0 if (barracks_map[r][c] == 1) else 1)
     parsed_combined_map.append(row)
 
@@ -205,8 +207,8 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 
   #get worker coords
   worker_coords = []
-  for r in range(4):
-    for c in range(4):
+  for r in range(grid_size):
+    for c in range(grid_size):
       if worker_map[r][c] >= 1:
         worker_coords.append((r, c))
 
