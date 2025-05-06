@@ -14,7 +14,6 @@ import time
 import heapq
 import math
 import torch
-import torch
 from multiprocessing import Pool, cpu_count
 
 from collections import deque
@@ -135,8 +134,11 @@ def find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coor
       parse_copy_map[base_coord[0]][base_coord[1]] = 0 #don't go through base
       path = bfs_find_one_worker_path_to_resource(parse_copy_map, worker, resource_coords)
       parse_copy_map[base_coord[0]][base_coord[1]] = 1 #pls go through base
-      for resource in resource_coords: #make all resources unwalkcable
-        parse_copy_map[resource[0]][resource[1]] = 0
+      for resource in resource_coords: #make all resources unwalkcable, if they are in map??
+        if 0 <= resource[0] < len(parse_copy_map) and 0 <= resource[1] < len(parse_copy_map[0]):
+          parse_copy_map[resource[0]][resource[1]] = 0
+        # else:
+        #   print(f"Invalid resource coordinates: {resource}")
 
       if not path:
         all_paths.append(path)
