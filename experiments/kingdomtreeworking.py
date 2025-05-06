@@ -13,11 +13,8 @@ from collections import defaultdict
 import time
 import heapq
 import math
-<<<<<<< HEAD
 
-=======
 import torch
->>>>>>> a04eb7ece1d8607a28526c9ce0eaec498e10649d
 from multiprocessing import Pool, cpu_count
 import torch
 import bisect
@@ -730,8 +727,4 @@ def bigBatch(tree_input, workers=cpu_count()-1):
     with Pool(processes=workers) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
-
-
-    stacked_results = torch.stack(results, dim=0)
-    print(stacked_results.shape)
     return torch.stack(results, dim=0)
