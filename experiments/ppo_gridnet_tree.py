@@ -607,6 +607,9 @@ if __name__ == "__main__":
     random_biased_envs = (args.num_bot_envs - 2 * coac_envs) // 4
     droplet_envs = (args.num_bot_envs - 2 * coac_envs) // 4
     worker_rush_envs = args.num_bot_envs - random_biased_envs - droplet_envs - tiamat_envs - coac_envs
+    print(f"coac_envs: {coac_envs}, random_biased_envs: {random_biased_envs}, droplet_envs: {droplet_envs}, worker_rush_envs: {worker_rush_envs}, tiamat_envs: {tiamat_envs}")
+    print(f"total_envs: {args.num_selfplay_envs + args.num_bot_envs}, num_selfplay_envs: {args.num_selfplay_envs}, num_bot_envs: {args.num_bot_envs}")
+    
     envs = MicroRTSGridModeVecEnv(
         num_selfplay_envs=args.num_selfplay_envs,
         num_bot_envs=args.num_bot_envs,
