@@ -173,9 +173,9 @@ def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_
   return gold_rates_per_path
 
 def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
-  for r in range(16):
+  for r in range(4):
     row = []
-    for c in range(16):
+    for c in range(4):
         if   worker_map[r][c] == 1:        row.append("👨🏻")
         elif base_map[r][c]   == 1:        row.append("🏠")
         elif resource_map[r][c]== 1:       row.append("❇️")
@@ -213,7 +213,7 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
       if worker_map[r][c] >= 1:
         worker_coords.append((r, c))
 
-  
+
 
   #get resource coords
   resource_coords = []
@@ -248,7 +248,34 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 def randomNum():
     return random.randint(0, 3), random.randint(0, 3)
 
-def generateRandArray(num_workers, num_resources, num_barracks, num_base=1):
+def pad_to_corner(og_map, owner_id=0, size=16, pad_value=0):
+    arr = np.array(og_map)
+    h, w = arr.shape
+    
+    # print(f"\nOG MAP with owner: {owner_id}")
+    # for row in og_map:
+    #   print(row)
+
+    # 2) Prepare the output
+    out = np.full((size, size), pad_value, dtype=arr.dtype)
+
+    # 3) Copy into the correct corner
+    if owner_id == 0:
+        out[:h, :w] = arr
+    else:
+        out[-h:, -w:] = arr
+
+    # print(f"\nNEW MAP with owner: {owner_id}")
+    # for row in out:
+    #   print(row)
+
+    return out
+
+    
+
+    
+
+def generateRandArray(num_workers, num_resources, num_barracks, num_base=1, passed_id=0):
     hash_map = {}
     hash_map[0] = num_workers
     hash_map[1] = num_base
@@ -293,6 +320,10 @@ def generateRandArray(num_workers, num_resources, num_barracks, num_base=1):
         arr[x][y] = 1
         visited.add((x, y))
       idx += 1
+
+    for i, arr in enumerate(arrays):
+      arrays[i] = pad_to_corner(arr, owner_id=passed_id, size=16, pad_value=0)
+
     return arrays
 
 ### ---------- STATE CLASS ---------- ###
@@ -572,7 +603,7 @@ def get_action_recommendation(state, num_of_actions = 3):
 def find_t_rush(coord1, coord2):
     x1, y1 = coord1
     x2, y2 = coord2
-    return abs(x1 - x2) + abs(y1 - y2)
+    return (abs(x1 - x2) + abs(y1 - y2))/3 #T_rush is too harsh so enemy nodes aren't being looked at.
 
 import bisect
 
@@ -618,9 +649,6 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     return best_leaf
 
 def generateForBatch(): #for testing
-  work_num = 1
-  res_num = 2
-  barr_num = 1
   batch_num = 100
 
   # these will hold per‐example tensors
@@ -638,10 +666,15 @@ def generateForBatch(): #for testing
 
   for i in range(batch_num):
       # build your raw data
+
+      # draws three ints in [0,3), i.e. 0,1,2
+      work_num, res_num, barr_num = np.random.randint(0, 3, size=3)
+
+
       user_state_vector  = [5, work_num, 0, 0, 0, barr_num, barr_num, 0]
       enemy_state_vector = [5, work_num, 0, 0, 0, barr_num, barr_num, 0]
-      user_arrays  = generateRandArray(work_num, res_num, barr_num)
-      enemy_arrays = generateRandArray(work_num, res_num, barr_num)
+      user_arrays  = generateRandArray(work_num, res_num, barr_num, passed_id=0)
+      enemy_arrays = generateRandArray(work_num, res_num, barr_num, passed_id=1)
 
       # convert each piece to a torch.Tensor *before* appending
       scalars_user.append(torch.tensor(user_state_vector, dtype=torch.float32))
@@ -703,7 +736,7 @@ def executeTwoTrees(inputs_for_both_trees):
 
     return output_tensor
 
-def bigBatch(tree_input, workers=cpu_count()):
+def bigBatch(tree_input):
     owner1, owner2 = tree_input
     scalars1, worker_map1, barracks_map1, resource_map1, base_map1 = owner1
     scalars2, worker_map2, barracks_map2, resource_map2, base_map2 = owner2
@@ -720,11 +753,14 @@ def bigBatch(tree_input, workers=cpu_count()):
         ])
 
     # 2) spawn a pool and map
-    with Pool(processes=workers) as pool:
+    with Pool(processes=cpu_count()) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
 
-
+    # print(results)
+    for thing in results:
+      print(thing)
     stacked_results = torch.stack(results, dim=0)
-    print(stacked_results.shape)
+    #print(stacked_results.shape)
+    
     return torch.stack(results, dim=0)
