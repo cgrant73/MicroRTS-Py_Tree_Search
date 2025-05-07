@@ -213,7 +213,7 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
       if worker_map[r][c] >= 1:
         worker_coords.append((r, c))
 
-
+  
 
   #get resource coords
   resource_coords = []

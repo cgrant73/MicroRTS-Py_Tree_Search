@@ -341,7 +341,7 @@ if __name__ == "__main__":
 
         
         print("worker_map looks like:")
-        print(base_map[0, :, :])
+        print(worker_map[0, :, :])
 
         
 
