@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
                 barracks_map = map_units_owner(x, barracks_idx, owner)
 
-                if True:  # Debugging information
+                if False:  # Debugging information
                     print("Base coordinates for owner", owner, ":", base_coordinates)
                     print("Worker coordinates for owner", owner, ":", torch.nonzero(worker_map[0,:,:], as_tuple=False))
 
@@ -184,10 +184,10 @@ if __name__ == "__main__":
                 # Print scalars of batch 0
                 if True:  # Debugging information
                     print("Scalars for owner", owner, ":", scalars)  # Print the scalars for the first environment
-                    print("Shape of scalars for owner", owner, ":", scalars.shape)
-                    print("Type of elements in scalars for owner", owner, ":", scalars.dtype)
+                    #print("Shape of scalars for owner", owner, ":", scalars.shape)
+                    #print("Type of elements in scalars for owner", owner, ":", scalars.dtype)
                     # print shape of maps
-                    print("Shape of worker_map for owner", owner, ":", worker_map.shape)
+                    #print("Shape of worker_map for owner", owner, ":", worker_map.shape)
 
 
                 returns[owner] = [scalars.cpu(), worker_map.cpu(), barracks_map.cpu(), resource_map.cpu(), base_map.cpu()]
@@ -327,7 +327,7 @@ if __name__ == "__main__":
         print("Testing bigbatch1...")
         # Test the bigBatch function with dummy input
         print("Shape of dummy input:", dummy_input.shape)
-        print("Type of dummy input:", dummy_input.dtype)
+        #print("Type of dummy input:", dummy_input.dtype)
 
         scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[1]
         visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
@@ -335,15 +335,8 @@ if __name__ == "__main__":
         print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input), workers=1))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
-        output = agent.get_action_and_value(dummy_input)
-        print("Forward pass successful. Output shape:", output[0].shape)
-
-
-        
-        print("worker_map looks like:")
-        print(worker_map[0, :, :])
-
-        
+        #output = agent.get_action_and_value(dummy_input)
+        #print("Forward pass successful. Output shape:", output[0].shape)
 
         
     
