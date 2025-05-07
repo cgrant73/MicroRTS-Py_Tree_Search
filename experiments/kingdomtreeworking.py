@@ -172,9 +172,9 @@ def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_
   return gold_rates_per_path
 
 def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
-  for r in range(4):
+  for r in range(16):
     row = []
-    for c in range(4):
+    for c in range(16):
         if   worker_map[r][c] == 1:        row.append("👨🏻")
         elif base_map[r][c]   == 1:        row.append("🏠")
         elif resource_map[r][c]== 1:       row.append("❇️")

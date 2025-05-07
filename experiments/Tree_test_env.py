@@ -323,17 +323,22 @@ if __name__ == "__main__":
         # Test the bigBatch function with dummy input
         print("Shape of dummy input:", dummy_input.shape)
         print("Type of dummy input:", dummy_input.dtype)
+
+        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[1]
+        visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
+
         print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input), workers=1))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
         output = agent.get_action_and_value(dummy_input)
         print("Forward pass successful. Output shape:", output[0].shape)
 
-        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[1]
+
+        
         print("worker_map looks like:")
         print(base_map[0, :, :])
 
-        visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
+        
 
         
     
