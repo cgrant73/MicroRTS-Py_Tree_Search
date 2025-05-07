@@ -140,9 +140,10 @@ def find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coor
         # else:
         #   print(f"Invalid resource coordinates: {resource}")
 
-      if not path:
+      if not path or len(path) < 2: #added < 2 to fix bug
         all_paths.append(path)
         continue
+
 
       path2 = bfs_find_one_worker_path_to_base(parse_copy_map, path[-2], base_coord)
       if not path2: #MEEEEEP
@@ -702,7 +703,7 @@ def executeTwoTrees(inputs_for_both_trees):
 
     return output_tensor
 
-def bigBatch(tree_input, workers = cpu_count):
+def bigBatch(tree_input):
     owner1, owner2 = tree_input
     scalars1, worker_map1, barracks_map1, resource_map1, base_map1 = owner1
     scalars2, worker_map2, barracks_map2, resource_map2, base_map2 = owner2
@@ -719,7 +720,7 @@ def bigBatch(tree_input, workers = cpu_count):
         ])
 
     # 2) spawn a pool and map
-    with Pool(processes=workers) as pool:
+    with Pool(processes=cpu_count()) as pool:
         results = pool.map(executeTwoTrees, tasks)
 
 
