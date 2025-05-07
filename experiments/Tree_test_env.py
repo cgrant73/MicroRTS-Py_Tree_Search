@@ -141,8 +141,7 @@ if __name__ == "__main__":
                 base_coordinates = torch.nonzero(base_map[0,:,:], as_tuple=False)  # Get the coordinates of the base for the given owner
 
 
-                if True:  # Debugging information
-                    print("Base coordinates for owner", owner, ":", base_coordinates)
+                
                 # Initialize the worker masks for both owners
                 # These are one in the corner that contains the base and zero elsewhere
                 worker_mask = torch.zeros((x.shape[0], x.shape[1], x.shape[2]), dtype=torch.float32, device=x.device)
@@ -163,6 +162,10 @@ if __name__ == "__main__":
                 attack_workers = torch.sum(torch.einsum('iab,iab,iab->iab', x[:, :, :, worker_idx], x[:, :, :, owner_idx], torch.ones_like(worker_mask)-worker_mask), (1,2))
 
                 barracks_map = map_units_owner(x, barracks_idx, owner)
+
+                if True:  # Debugging information
+                    print("Base coordinates for owner", owner, ":", base_coordinates)
+                    print("Worker coordinates for owner", owner, ":", torch.nonzero(worker_map[0,:,:], as_tuple=False))
 
 
                 light_units = torch.sum(map_units_owner(x, light_idx, owner),(1,2))
@@ -302,8 +305,10 @@ if __name__ == "__main__":
         dummy_input[0:batches, 13, 13, 15] = 1.0  # Base for player 2
         dummy_input[0:batches, 13, 13, 9] = 1.0  # Resource for player 2
 
-        dummy_input[0:batches, 14, 14, 12] = 1.0  # Ownership for player 2
-        dummy_input[0:batches, 14, 14, 17] = 1.0  # Worker for player 2
+        dummy_input[0:batches, 13, 14, 12] = 1.0  # Ownership for player 2
+        dummy_input[0:batches, 13, 14, 17] = 1.0  # Worker for player 2
+        dummy_input[0:batches, 14, 13, 12] = 1.0  # Ownership for player 2
+        dummy_input[0:batches, 14, 13, 17] = 1.0  # Worker for player 2
 
         # heavy unit at (10,10) for player 2
         dummy_input[0:batches, 10, 10, 12] = 1.0  # Ownership for player 2
