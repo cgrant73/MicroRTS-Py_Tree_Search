@@ -205,7 +205,7 @@ if __name__ == "__main__":
 
             # tree_input is a tuple of (scalars, worker_map, barracks_map, obstacle_map) for each owner
             
-            tree_vector = bigBatch(tree_input, workers = 1)  # (num_envs, tree_output_c)
+            tree_vector = bigBatch(tree_input)  # (num_envs, tree_output_c)
             
 
             tree_output = tree_vector.repeat(self.map_shape[0], self.map_shape[1], 1, 1).permute(2,0,1,3)  # Batch, Height, Width, Channels
@@ -329,10 +329,10 @@ if __name__ == "__main__":
         print("Shape of dummy input:", dummy_input.shape)
         #print("Type of dummy input:", dummy_input.dtype)
 
-        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[1]
+        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[0]
         visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
 
-        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input), workers=1))  # Test the bigBatch function with dummy input
+        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input)))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
         #output = agent.get_action_and_value(dummy_input)
