@@ -576,7 +576,7 @@ output_vectors = {
     "buy_heavy":         torch.tensor([0, 0, 0, 0, 0, 1, 0], dtype=torch.float32),
     "buy_ranged":        torch.tensor([0, 0, 0, 0, 0, 0, 1], dtype=torch.float32),
     "buy_attack_worker": torch.tensor([0, 0, 0, 1, 0, 0, 0], dtype=torch.float32),
-    "wait": torch.tensor([0, 0, 0, 1, 0, 0, 0], dtype=torch.float32),
+    "wait": torch.tensor([0, 1, 0, 0, 0, 0, 0], dtype=torch.float32),
 }
 
 #output_vectors["wait"] = [0, 0, 0, 0, 0, 0, 0] #perhaps get rid of this
