@@ -154,7 +154,7 @@ def find_all_remaining_worker_paths(parsed_combined_map, worker_map, worker_coor
   return all_paths
 
 #these variables will have to be changed with the actual code files
-def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 1, deposit_time = 1): #this is kinda buggy, check photos on phone
+def caclulate_path_rates(all_paths, worker_speed = 1, harvest_time = 2, deposit_time = 1): #this is kinda buggy, check photos on phone
   if all_paths == []:
     return [] #idk we can do something here.[math.inf]
   gold_rates_per_path = []
@@ -185,14 +185,14 @@ def visualize_the_gird(worker_map, base_map, resource_map, barracks_map):
 
 def pathfinding(worker_map, base_map, resource_map, barracks_map):
   #getting base coordinates
-  coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1]
+  coords = [(r, c) for r, row in enumerate(base_map) for c, val in enumerate(row) if val == 1] #change base_coord, #tesnor, tells you where the tensors are non 0
   if coords:
     base_coord = coords[0]  
   else:
     return [math.inf], [math.inf], None
 
   #making a grid suitable for pathfinding
-  parsed_combined_map = []
+  parsed_combined_map = [] #just add barracks map
   for r in range(len(worker_map)):
     row = []
     for c in range(len(worker_map[r])):
@@ -207,7 +207,7 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
   #visualize_the_gird(worker_map, base_map, resource_map, barracks_map)
 
   #get worker coords
-  worker_coords = []
+  worker_coords = [] #tesnor, tells you where the tensors are non 0
   for r in range(len(worker_map)):
     for c in range(len(worker_map[r])):
       if worker_map[r][c] >= 1:
@@ -215,7 +215,7 @@ def pathfinding(worker_map, base_map, resource_map, barracks_map):
 
 
 
-  #get resource coords
+  #get resource coords, #tesnor, tells you where the tensors are non 0
   resource_coords = []
   for r in range(len(resource_map)):
       for c in range(len(resource_map[r])):
@@ -576,7 +576,7 @@ output_vectors = {
     "buy_heavy":         torch.tensor([0, 0, 0, 0, 0, 1, 0], dtype=torch.float32),
     "buy_ranged":        torch.tensor([0, 0, 0, 0, 0, 0, 1], dtype=torch.float32),
     "buy_attack_worker": torch.tensor([0, 0, 0, 1, 0, 0, 0], dtype=torch.float32),
-    "wait": torch.tensor([0, 0, 0, 1, 0, 0, 0], dtype=torch.float32),
+    "wait": torch.tensor([0, 0, 0, 0, 0, 0, 0], dtype=torch.float32),
 }
 
 #output_vectors["wait"] = [0, 0, 0, 0, 0, 0, 0] #perhaps get rid of this
@@ -603,7 +603,7 @@ def get_action_recommendation(state, num_of_actions = 3):
 def find_t_rush(coord1, coord2):
     x1, y1 = coord1
     x2, y2 = coord2
-    return (abs(x1 - x2) + abs(y1 - y2))/2 #T_rush as it is is a little too harsh, so we divide by 2
+    return (abs(x1 - x2) + abs(y1 - y2))/1 #T_rush as it is is a little too harsh, so we divide by 2
 
 import bisect
 
@@ -640,7 +640,7 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
         if idx < 0: #changed from == to allow for 
             continue  # no valid enemy before cutoff
         enemy_best = prefix_max[idx - 1]
-        score = (leaf.military_strength - enemy_best) + (4 * (1 - abs(leaf.state_vector[0] - len(optimal_path_rates)))) + leaf.state_vector[5]*5 #change to g/s ()
+        score = (leaf.military_strength - enemy_best) + (4 * (1 - abs(leaf.state_vector[1] - len(optimal_path_rates)))) + leaf.state_vector[5]*5 
 
         if score > best_score:
             best_score = score
