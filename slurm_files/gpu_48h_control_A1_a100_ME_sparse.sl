@@ -11,7 +11,6 @@
 #SBATCH --mail-type=BEGIN,END,FAIL       # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=grantcr@bc.edu # Email for notifications
 
-
 module load cuda
 cd /home/grantcr/
 bash 
@@ -30,7 +29,8 @@ python -c "import torch; print(torch.__version__); print(torch.cuda.is_available
 python ppo_gridnet_tree.py\
     --seed 0\
     --prod-mode True\
-    --num-bot-envs 24\
-    --num-selfplay-envs 4\
-    --Tree_Agent True\
-    --cuda True
+    --num-bot-envs 512\
+    --num-selfplay-envs 256\
+    --Tree_Agent False\
+    --cuda True\
+    --sparse_reward True

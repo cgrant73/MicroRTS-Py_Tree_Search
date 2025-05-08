@@ -5,12 +5,11 @@
 #SBATCH --nodes=1                        # Number of nodes
 #SBATCH --ntasks=1 --cpus-per-task=10     # 10 CPU on a single node
 #SBATCH --mem-per-cpu=20g                 # Memory request per CPU
-#SBATCH --partition=gpua100              # 48h partition
+#SBATCH --partition=gpuv100              # 48h partition
 #SBATCH --time=47:30:00                  # Time limit (hrs:min:sec)
 #SBATCH --gres=gpu:1			# one GPU
 #SBATCH --mail-type=BEGIN,END,FAIL       # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=grantcr@bc.edu # Email for notifications
-
 
 module load cuda
 cd /home/grantcr/
