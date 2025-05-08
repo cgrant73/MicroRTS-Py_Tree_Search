@@ -29,7 +29,7 @@ python -c "import torch; print(torch.__version__); print(torch.cuda.is_available
 python ppo_gridnet_tree.py\
     --seed 0\
     --prod-mode True\
-    --num-bot-envs 128\
-    --num-selfplay-envs 24\
+    --num-bot-envs 512\
+    --num-selfplay-envs 256\
     --Tree_Agent True\
     --cuda True
