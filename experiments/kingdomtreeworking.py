@@ -597,13 +597,13 @@ def get_action_recommendation(state, num_of_actions = 3):
       if output_vector:
         output_vector.append(output_vector[0]) #just copy the first one, output_vector.append([0, 0, 0, 0, 0, 0, 0])
       else:
-        output_vector.append(torch.tensor([0, 0, 0, 1, 0, 0, 0], dtype=torch.float32))
+        output_vector.append(torch.tensor([0, 0, 0, 0, 0, 0, 0], dtype=torch.float32))
   return output_vector
 
 def find_t_rush(coord1, coord2):
     x1, y1 = coord1
     x2, y2 = coord2
-    return (abs(x1 - x2) + abs(y1 - y2))/1 #T_rush as it is is a little too harsh, so we divide by 2
+    return (abs(x1 - x2) + abs(y1 - y2))/1 #T_rush is slightly 
 
 import bisect
 
