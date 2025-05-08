@@ -53,6 +53,8 @@ def parse_args():
     # Algorithm specific arguments
     parser.add_argument('--partial-obs', type=lambda x: bool(strtobool(x)), default=False, nargs='?', const=True,
         help='if toggled, the game will have partial observability')
+    parser.add_argument('--sparse-reward', type=lambda x: bool(strtobool(x)), default=False, nargs='?', const=True,
+        help='if toggled, the game will have sparse reward')
     parser.add_argument('--n-minibatch', type=int, default=4,
         help='the number of mini batch')
     parser.add_argument('--num-bot-envs', type=int, default=24,
@@ -609,7 +611,11 @@ if __name__ == "__main__":
     worker_rush_envs = args.num_bot_envs - random_biased_envs - droplet_envs - tiamat_envs - coac_envs
     print(f"coac_envs: {coac_envs}, random_biased_envs: {random_biased_envs}, droplet_envs: {droplet_envs}, worker_rush_envs: {worker_rush_envs}, tiamat_envs: {tiamat_envs}")
     print(f"total_envs: {args.num_selfplay_envs + args.num_bot_envs}, num_selfplay_envs: {args.num_selfplay_envs}, num_bot_envs: {args.num_bot_envs}")
-    
+    if args.sparse_reward:
+        RW = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    else:
+        RW = np.array([10.0, 1.0, 1.0, 0.2, 1.0, 4.0])
+
     envs = MicroRTSGridModeVecEnv(
         num_selfplay_envs=args.num_selfplay_envs,
         num_bot_envs=args.num_bot_envs,
@@ -622,7 +628,7 @@ if __name__ == "__main__":
         + [microrts_ai.workerRushAI for _ in range(worker_rush_envs)]
         + [microrts_ai.tiamat for _ in range(tiamat_envs)],
         map_paths=["maps/16x16/basesWorkers16x16.xml"],
-        reward_weight=np.array([10.0, 1.0, 1.0, 0.2, 1.0, 4.0]),
+        reward_weight=RW,
     )
     envs = MicroRTSStatsRecorder(envs, args.gamma)
     envs = VecMonitor(envs)
