@@ -279,6 +279,10 @@ if __name__ == "__main__":
         dummy_input[0:batches, 3, 3, 9] = 1.0  # Resource for player 1
         dummy_input[0:batches, 4, 4, 11] = 1.0  # Ownership for player 1
         dummy_input[0:batches, 4, 4, 17] = 1.0  # Worker for player 1
+        dummy_input[0:batches,1, 2, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 1, 2, 17] = 1.0  # Worker for player 1
+        dummy_input[0:batches, 1, 3, 11] = 1.0  # Ownership for player 1
+        dummy_input[0:batches, 1, 3, 17] = 1.0  # Worker for player 1
 
         # attack worker at (8,8) for player 1
         dummy_input[0:batches, 8, 8, 11] = 0.0  # Ownership for player 1
