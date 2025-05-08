@@ -361,37 +361,37 @@ ACTION_VECTORS = { #how it affects the state on the action, CHANGE THESE TO THE 
     "buy_worker": {
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, 0, 0],
-        "time_add": (1, 2),
+        "time_add": (1, 5),
         "requirements": {}
     },
     "buy_barrack": {
         "cost": 4,
         "state_vector": [-4, 0, 0, 0, 0, 0, 0, 0],
-        "time_add": (5, 5),
+        "time_add": (5, 6.5),
         "requirements": {}
     },
     "buy_light": {
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, -1, 0],
-        "time_add": (2, 2),
+        "time_add": (2, 6.5),
         "requirements": {"active_barracks": 1}
     },
     "buy_heavy": {
         "cost": 3,
         "state_vector": [-3, 0, 0, 0, 0, 0, -1, 0],
-        "time_add": (3, 2),
+        "time_add": (3, 12),
         "requirements": {"active_barracks": 1}
     },
     "buy_ranged": {
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, -1, 0],
-        "time_add": (4, 2),
+        "time_add": (4, 10),
         "requirements": {"active_barracks": 1}
     },
     "buy_attack_worker": {
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, 0, 0],
-        "time_add": (7, 2),
+        "time_add": (7, 5),
         "requirements": {}
     }
 
@@ -603,7 +603,7 @@ def get_action_recommendation(state, num_of_actions = 3):
 def find_t_rush(coord1, coord2):
     x1, y1 = coord1
     x2, y2 = coord2
-    return (abs(x1 - x2) + abs(y1 - y2))/3 #T_rush is too harsh so enemy nodes aren't being looked at.
+    return (abs(x1 - x2) + abs(y1 - y2))/2 #T_rush as it is is a little too harsh, so we divide by 2
 
 import bisect
 
@@ -637,7 +637,7 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     for leaf in leaves:
         cutoff = leaf.time_till - T_rush
         idx = bisect.bisect_left(times, cutoff)
-        if idx == 0:
+        if idx < 0: #changed from == to allow for 
             continue  # no valid enemy before cutoff
         enemy_best = prefix_max[idx - 1]
         score = (leaf.military_strength - enemy_best) + (4 * (1 - abs(leaf.state_vector[0] - len(optimal_path_rates)))) + leaf.state_vector[5]*5 #change to g/s ()
@@ -648,9 +648,7 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
 
     return best_leaf
 
-def generateForBatch(): #for testing
-  batch_num = 100
-
+def generateForBatch(batch_num=100): #for testing
   # these will hold per‐example tensors
   scalars_user       = []
   worker_maps_user   = []
@@ -755,12 +753,5 @@ def bigBatch(tree_input):
     # 2) spawn a pool and map
     with Pool(processes=cpu_count()) as pool:
         results = pool.map(executeTwoTrees, tasks)
-
-
-    # print(results)
-    for thing in results:
-      print(thing)
-    stacked_results = torch.stack(results, dim=0)
-    #print(stacked_results.shape)
-    
+ 
     return torch.stack(results, dim=0)
