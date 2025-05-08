@@ -514,6 +514,9 @@ class GameTree:
       time = None
 
       #loop through the actions
+      #prune the tree, don't make children if this state has less military strenght than the max
+      #if self.max_mil_arr[str(time)] > state.military_strength:
+      #meep
       for action_name, action_data in ACTION_VECTORS.items():
           if self.is_action_valid(pseudo_state, action_data):
               #apply state vector
