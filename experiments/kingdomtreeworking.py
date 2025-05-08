@@ -358,31 +358,31 @@ ACTION_VECTORS = { #how it affects the state on the action, CHANGE THESE TO THE 
         "time_add": None,
         "requirements": {}
     },
-    "buy_worker": {
-        "cost": 2,
-        "state_vector": [-2, 0, 0, 0, 0, 0, 0, 0],
+    "buy_worker": { # produce time = 50
+        "cost": 1,
+        "state_vector": [-1, 0, 0, 0, 0, 0, 0, 0],
         "time_add": (1, 5),
         "requirements": {}
     },
-    "buy_barrack": {
-        "cost": 4,
-        "state_vector": [-4, 0, 0, 0, 0, 0, 0, 0],
-        "time_add": (5, 6.5),
+    "buy_barrack": { # produce time = 200
+        "cost": 5,
+        "state_vector": [-5, 0, 0, 0, 0, 0, 0, 0],
+        "time_add": (5, 20),
         "requirements": {}
     },
-    "buy_light": {
+    "buy_light": { # produce time = 80
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, -1, 0],
-        "time_add": (2, 6.5),
+        "time_add": (2, 8),
         "requirements": {"active_barracks": 1}
     },
-    "buy_heavy": {
-        "cost": 3,
-        "state_vector": [-3, 0, 0, 0, 0, 0, -1, 0],
+    "buy_heavy": { # produce time = 120
+        "cost": 2,
+        "state_vector": [-2, 0, 0, 0, 0, 0, -1, 0],
         "time_add": (3, 12),
         "requirements": {"active_barracks": 1}
     },
-    "buy_ranged": {
+    "buy_ranged": { # produce time = 100
         "cost": 2,
         "state_vector": [-2, 0, 0, 0, 0, 0, -1, 0],
         "time_add": (4, 10),
