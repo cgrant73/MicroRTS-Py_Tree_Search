@@ -15,6 +15,7 @@ import heapq
 import math
 import torch
 from multiprocessing import Pool, cpu_count
+import bisect
 
 from collections import deque
 import copy
@@ -420,8 +421,37 @@ mil_values = {
     7: 1  #attack_work
 }
 
-class GameTree:
-    def __init__(self, initial_state_vector, initial_time_vector, optimal_time_vector_workers, hard_wait=7, runtime_limit=0.05): #deal with the hard_wait thing, also think of a dif name, maybe only make it kick in with no other triggers
+class militaryMaxList:
+    def __init__(self):
+        self.times = []    # e.g. [0, 3, 6, …]
+        self.military_strengths = []   # e.g. [5, 8, 10, …]
+
+    def add(self, t, ms):
+        if self.military_strengths and ms <= self.military_strengths[-1]:
+            return
+
+        self.times.append(t)
+        self.military_strengths.append(ms)
+
+    def max_before(self, cutoff): #if cutoff is -1
+        if not self.times:
+          return 0
+        if cutoff < self.times[0]:
+          return self.military_strengths[0]
+
+        lo, hi = 0, len(self.times) - 1
+        while lo < hi:
+            mid = (lo + hi + 1) // 2
+            if self.times[mid] <= cutoff:
+                lo = mid
+            else:
+                hi = mid - 1
+
+        return self.military_strengths[lo]
+
+
+class GameTree: #add owner id and t_rush 
+    def __init__(self, initial_state_vector, initial_time_vector, optimal_time_vector_workers, owner_id, t_rush, hard_wait=7, runtime_limit=0.05): #deal with the hard_wait thing, also think of a dif name, maybe only make it kick in with no other triggers
         self.root = State(
             state_vector=np.array(initial_state_vector),
             time_vector=initial_time_vector,
@@ -435,7 +465,10 @@ class GameTree:
         self.hard_wait = hard_wait
         self.runtime_limit = runtime_limit
         self.optimal_time_vector_workers = optimal_time_vector_workers #for resetting
-        self.max_mil_arr = defaultdict(lambda: 0)
+        self.max_mil_arr = militaryMaxList()
+        self.owner_id=owner_id
+        self.t_rush = t_rush
+
 
     def build(self):
       start_time = time.time()
@@ -444,7 +477,7 @@ class GameTree:
           current = self.heap[0] #peek the top
 
           self.expand_state(current) #generate kids and push them in
-
+          
           heapq.heappop(self.heap) #pop the top
 
           self.visited.append(current)  #just to track, dw king, chat said to add for debugging and for checking stats after (like evaluation)
@@ -505,54 +538,53 @@ class GameTree:
       updated_sv, updated_tv, time_advanced, military_change = self.simulate_time_forward(state)
       if updated_sv is None:
           return  #no timers, so don't expand
+      
+      #add military here?? 
+      self.max_mil_arr.add(state.time_till, state.military_strength) #adding the parents state military sternght to max_mil_arr
 
       #hidden state lol, to keep track of what we get after the timer is up
-      pseudo_state = State(state_vector=updated_sv, time_vector=updated_tv)
-
-      # military_strength arr to get the max-value from
-      mil_arrs = []
-      time = None
+      pseudo_state = State(state_vector=updated_sv, time_vector=updated_tv, time_till=(state.time_till + time_advanced), military_strength=(state.military_strength + military_change))
 
       #loop through the actions
       #prune the tree, don't make children if this state has less military strenght than the max
       #if self.max_mil_arr[str(time)] > state.military_strength:
       #meep
-      for action_name, action_data in ACTION_VECTORS.items():
-          if self.is_action_valid(pseudo_state, action_data):
-              #apply state vector
-              new_sv = updated_sv + np.array(action_data["state_vector"])
+      #max_mill, d = {0: 5, 3: 8, 6: 10}
 
-              #timing stuff, chat helped with this :O
-              new_tv = defaultdict(list)
-              for k, v in updated_tv.items():
-                  new_tv[k] = v.copy()
+      #check here if it should propogate
+      #find max before this psuedo time
+      max_enemy_mil_t_rush_away = self.max_mil_arr.max_before(pseudo_state.time_till - self.t_rush) #this is the max enemy military strength before t_rush
 
-              if action_data["time_add"]:
-                  idx, val = action_data["time_add"]
-                  new_tv[idx].append(val)
+      if self.owner_id == 1 or (self.owner_id == 0 and pseudo_state.military_strength >= (max_enemy_mil_t_rush_away - 3)): #-3 is a buffer
+        for action_name, action_data in ACTION_VECTORS.items():
+            if self.is_action_valid(pseudo_state, action_data):
+                #apply state vector
+                new_sv = updated_sv + np.array(action_data["state_vector"])
 
-              #the new kid
-              child = State(
-                  state_vector=new_sv,
-                  time_vector=new_tv,
-                  time_till=state.time_till + time_advanced,
-                  action_history=state.action_history + [action_name], #action_history=state.action_history + [f"wait {time_advanced}s", action_name],
-                  parent=state,
-                  military_strength=state.military_strength + military_change
-              )
-              #get childs time and military strength
+                #timing stuff, chat helped with this :O
+                new_tv = defaultdict(list)
+                for k, v in updated_tv.items():
+                    new_tv[k] = v.copy()
 
-              mil_arrs.append(child.military_strength)
-              time = child.time_vector
+                if action_data["time_add"]:
+                    idx, val = action_data["time_add"]
+                    new_tv[idx].append(val)
 
-              #run wtvr you wanna do for the min_heap
+                #the new kid
+                child = State(
+                    state_vector=new_sv,
+                    time_vector=new_tv,
+                    time_till=pseudo_state.time_till,
+                    action_history=state.action_history + [action_name], #action_history=state.action_history + [f"wait {time_advanced}s", action_name],
+                    parent=state,
+                    military_strength=pseudo_state.military_strength
+                )
 
-              #add child to both tree and the minheap
-              state.children.append(child)
-              heapq.heappush(self.heap, child)
+                #run wtvr you wanna do for the min_heap
 
-      # updates the max military array with the value at this time
-      self.max_mil_arr[str(time)] = max(max(mil_arrs), self.max_mil_arr[str(time)])
+                #add child to both tree and the minheap
+                state.children.append(child)
+                heapq.heappush(self.heap, child)    
 
     def print_tree(self, max_depth=None):
       def dfs(node, depth):
@@ -608,7 +640,6 @@ def find_t_rush(coord1, coord2):
     x2, y2 = coord2
     return (abs(x1 - x2) + abs(y1 - y2))/1 #T_rush is slightly 
 
-import bisect
 
 def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     # 1) Flatten both trees
@@ -728,11 +759,11 @@ def executeTwoTrees(inputs_for_both_trees):
     else:
       t_rush = find_t_rush(u_base_coord, e_base_coord) 
 
-    our_tree = GameTree(inputs_for_both_trees[0][0], {0: u_current_path_rates}, u_optimal_path_rates, runtime_limit=0.002) #runtime limitation
-    enemy_tree = GameTree(inputs_for_both_trees[1][0], {0: e_current_path_rates}, e_optimal_path_rates, runtime_limit=0.002)
-
-    our_tree.build()
+    enemy_tree = GameTree(inputs_for_both_trees[1][0], {0: e_current_path_rates}, e_optimal_path_rates, 1,  t_rush, runtime_limit=0.002) #0.002
+    our_tree = GameTree(inputs_for_both_trees[0][0], {0: u_current_path_rates}, u_optimal_path_rates, 0, t_rush, runtime_limit=0.002) #runtime limitation
+    
     enemy_tree.build()
+    our_tree.build()
 
     best_leaf_recommendations = evaluate_best_leaf(our_tree, enemy_tree, t_rush, u_optimal_path_rates)
     output_tensor = get_action_recommendation(best_leaf_recommendations) #list of three tensors
