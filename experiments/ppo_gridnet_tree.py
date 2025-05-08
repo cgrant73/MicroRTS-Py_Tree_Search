@@ -464,7 +464,7 @@ class Tree_Agent(nn.Module):
             print("Shape of x after concatenation:", x.shape)  # Should be (num_envs, height, width, channels + tree_output_c)
         return x
 
-    def get_action_and_value(self, x, statistic=None, action=None, invalid_action_masks=None, envs=None, device=None):
+    def get_action_and_value(self, x, action=None, invalid_action_masks=None, envs=None, device=None):
         """
         :return:
             (1) action (shape = [num_envs, width*height, 7], where 7 = dimensionality of per-unit action)
