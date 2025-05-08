@@ -413,8 +413,8 @@ mil_values = {
     0: 0, #gold, no
     1: 0, #econ worker, no
     2: 2, #light
-    3: 3, #heavy
-    4: 3, #ragned
+    3: 2, #heavy
+    4: 4, #ragned
     5: 0, #barracks, no
     6: 0, #wait, no
     7: 1  #attack_work
@@ -637,8 +637,8 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
     best_leaf  = None
     best_score = float('-inf')
 
-    military_score = - 4
-    active_worker_score = 4
+    military_score = 1
+    active_worker_score = 10
 
     for leaf in leaves:
         cutoff = leaf.time_till - T_rush
@@ -646,7 +646,7 @@ def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
         if idx < 0: #changed from == to allow for 
             continue  # no valid enemy before cutoff
         enemy_best = prefix_max[idx - 1]
-        score = military_score * (leaf.military_strength - enemy_best) + (active_worker_score * (1 - abs(leaf.state_vector[1] - len(optimal_path_rates)))) + 5 * leaf.state_vector[5] + 8 * min(0,leaf.state_vector[5] - leaf.state_vector[6]) #barracks - available_barracks
+        score = military_score * (leaf.military_strength - enemy_best) + (active_worker_score * (1 - abs(leaf.state_vector[1] - len(optimal_path_rates)))) + 10 * leaf.state_vector[5] + 13 * min(0,leaf.state_vector[5] - leaf.state_vector[6]) #barracks - available_barracks
 
         if score > best_score:
             best_score = score
