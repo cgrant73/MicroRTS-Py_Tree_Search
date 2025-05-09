@@ -585,6 +585,8 @@ class GameTree: #add owner id and t_rush
                 #add child to both tree and the minheap
                 state.children.append(child)
                 heapq.heappush(self.heap, child)    
+    def get_mil_max(self):
+      return self.enemy_max_mil_arr
 
     def print_tree(self, max_depth=None):
       def dfs(node, depth):
@@ -641,47 +643,35 @@ def find_t_rush(coord1, coord2):
     return (abs(x1 - x2) + abs(y1 - y2))/1 #T_rush is slightly 
 
 
-def evaluate_best_leaf(our_tree, enemy_tree, T_rush, optimal_path_rates):
-    # 1) Flatten both trees
-    def flatten(root):
-        stack, out = [root], []
-        while stack:
-            node = stack.pop()
-            out.append(node)
-            stack.extend(node.children)
-        return out
+def evaluate_best_leaf(our_tree, militaryMaxArr, T_rush, optimal_path_rates):
+    best_leaf, best_score = None, float('-inf')
+    root = our_tree.root
+    stack = [root]
 
-    leaves  = [n for n in flatten(our_tree.root) if not n.children]
-    enemies = flatten(enemy_tree.root)
-
-    # 2) Sort enemy nodes by time_till and build a prefix-max over their strengths
-    enemies.sort(key=lambda n: n.time_till)
-    times   = [n.time_till for n in enemies]
-    strengths = [n.military_strength for n in enemies]
-    prefix_max = []
-    running_max = float('-inf')
-    for s in strengths:
-        running_max = max(running_max, s)
-        prefix_max.append(running_max)
-
-    # 3) Walk through leaves, binary-search the cutoff, compute score, and track the best
-    best_leaf  = None
-    best_score = float('-inf')
-
-    military_score = 1
+    military_score      = 1
     active_worker_score = 10
+    ideal_workers       = len(optimal_path_rates)
 
-    for leaf in leaves:
-        cutoff = leaf.time_till - T_rush
-        idx = bisect.bisect_left(times, cutoff)
-        if idx < 0: #changed from == to allow for 
-            continue  # no valid enemy before cutoff
-        enemy_best = prefix_max[idx - 1]
-        score = military_score * (leaf.military_strength - enemy_best) + (active_worker_score * (1 - abs(leaf.state_vector[1] - len(optimal_path_rates)))) + 10 * leaf.state_vector[5] + 13 * min(0,leaf.state_vector[5] - leaf.state_vector[6]) #barracks - available_barracks
+    while stack:
+        node = stack.pop()
+
+        if node.children:
+            stack.extend(node.children)
+            continue
+
+        # it's a leaf
+        cutoff     = node.time_till - T_rush
+        enemy_best = militaryMaxArr.max_before(cutoff)
+
+        score = (
+            military_score * (node.military_strength - enemy_best)
+          + active_worker_score * (1 - abs(node.state_vector[1] - ideal_workers))
+          + 10 * node.state_vector[5]
+          + 13 * min(0, node.state_vector[5] - node.state_vector[6])
+        )
 
         if score > best_score:
-            best_score = score
-            best_leaf  = leaf
+            best_score, best_leaf = score, node
 
     return best_leaf
 
@@ -759,10 +749,12 @@ def executeTwoTrees(inputs_for_both_trees):
     else:
       t_rush = find_t_rush(u_base_coord, e_base_coord) 
 
+
     enemy_tree = GameTree(inputs_for_both_trees[1][0], {0: e_current_path_rates}, e_optimal_path_rates, 1,  t_rush, runtime_limit=0.002) #0.002
-    our_tree = GameTree(inputs_for_both_trees[0][0], {0: u_current_path_rates}, u_optimal_path_rates, 0, t_rush, runtime_limit=0.002) #runtime limitation
-    
     enemy_tree.build()
+    max_mil_array_enemy = enemy_tree.get_mil_max()
+
+    our_tree = GameTree(inputs_for_both_trees[0][0], {0: u_current_path_rates}, u_optimal_path_rates, 0, t_rush, enemy_max_mil_arr=max_mil_array_enemy, runtime_limit=0.002) #runtime limitation
     our_tree.build()
 
     if our_tree.root == None or enemy_tree.root == None: #bandaid fix
@@ -770,7 +762,7 @@ def executeTwoTrees(inputs_for_both_trees):
       output_tensor = torch.cat(output_tensor, dim=0)
       return output_tensor
 
-    best_leaf_recommendations = evaluate_best_leaf(our_tree, enemy_tree, t_rush, u_optimal_path_rates)
+    best_leaf_recommendations = evaluate_best_leaf(our_tree, max_mil_array_enemy, t_rush, u_optimal_path_rates)
     output_tensor = get_action_recommendation(best_leaf_recommendations) #list of three tensors
     output_tensor = torch.cat(output_tensor, dim=0)
 
