@@ -421,7 +421,7 @@ mil_values = {
     7: 1  #attack_work
 }
 
-class militaryMaxList:
+class militaryMaxList: #custom list from chatGPT to help us keep track of military strength FAST (logn) 
     def __init__(self):
         self.times = []    # e.g. [0, 3, 6, …]
         self.military_strengths = []   # e.g. [5, 8, 10, …]
@@ -451,7 +451,7 @@ class militaryMaxList:
 
 
 class GameTree: #add owner id and t_rush 
-    def __init__(self, initial_state_vector, initial_time_vector, optimal_time_vector_workers, owner_id, t_rush, hard_wait=7, runtime_limit=0.05): #deal with the hard_wait thing, also think of a dif name, maybe only make it kick in with no other triggers
+    def __init__(self, initial_state_vector, initial_time_vector, optimal_time_vector_workers, owner_id, t_rush, enemy_max_mil_arr=None, hard_wait=7, runtime_limit=0.05): #deal with the hard_wait thing, also think of a dif name, maybe only make it kick in with no other triggers
         self.root = State(
             state_vector=np.array(initial_state_vector),
             time_vector=initial_time_vector,
@@ -465,7 +465,10 @@ class GameTree: #add owner id and t_rush
         self.hard_wait = hard_wait
         self.runtime_limit = runtime_limit
         self.optimal_time_vector_workers = optimal_time_vector_workers #for resetting
-        self.max_mil_arr = militaryMaxList()
+        if enemy_max_mil_arr == None:
+          self.enemy_max_mil_arr = militaryMaxList()
+        else:
+          self.enemy_max_mil_arr = enemy_max_mil_arr
         self.owner_id=owner_id
         self.t_rush = t_rush
 
@@ -481,7 +484,8 @@ class GameTree: #add owner id and t_rush
           heapq.heappop(self.heap) #pop the top
 
           self.visited.append(current)  #just to track, dw king, chat said to add for debugging and for checking stats after (like evaluation)
-      return current #only doing this to test out my output function, REMOVE LATER
+      self.root = None #TO SEE WHAT HAPPENS WHEN NONE
+      #return current #only doing this to test out my output function, REMOVE LATER
 
     def simulate_time_forward(self, state):
       #all timers across all keys
@@ -540,20 +544,17 @@ class GameTree: #add owner id and t_rush
           return  #no timers, so don't expand
       
       #add military here?? 
-      self.max_mil_arr.add(state.time_till, state.military_strength) #adding the parents state military sternght to max_mil_arr
+
 
       #hidden state lol, to keep track of what we get after the timer is up
       pseudo_state = State(state_vector=updated_sv, time_vector=updated_tv, time_till=(state.time_till + time_advanced), military_strength=(state.military_strength + military_change))
 
-      #loop through the actions
-      #prune the tree, don't make children if this state has less military strenght than the max
-      #if self.max_mil_arr[str(time)] > state.military_strength:
-      #meep
-      #max_mill, d = {0: 5, 3: 8, 6: 10}
-
       #check here if it should propogate
       #find max before this psuedo time
-      max_enemy_mil_t_rush_away = self.max_mil_arr.max_before(pseudo_state.time_till - self.t_rush) #this is the max enemy military strength before t_rush
+      if self.owner_id == 1:
+        self.enemy_max_mil_arr.add(state.time_till, state.military_strength) #adding the parents state military sternght to max_mil_arr
+      else:
+        max_enemy_mil_t_rush_away = self.enemy_max_mil_arr.max_before(pseudo_state.time_till - self.t_rush) #this is the max enemy military strength before t_rush
 
       if self.owner_id == 1 or (self.owner_id == 0 and pseudo_state.military_strength >= (max_enemy_mil_t_rush_away - 3)): #-3 is a buffer
         for action_name, action_data in ACTION_VECTORS.items():
@@ -764,6 +765,11 @@ def executeTwoTrees(inputs_for_both_trees):
     
     enemy_tree.build()
     our_tree.build()
+
+    if our_tree.root == None or enemy_tree.root == None: #bandaid fix
+      output_tensor = [torch.zeros(7) for _ in range(3)]
+      output_tensor = torch.cat(output_tensor, dim=0)
+      return output_tensor
 
     best_leaf_recommendations = evaluate_best_leaf(our_tree, enemy_tree, t_rush, u_optimal_path_rates)
     output_tensor = get_action_recommendation(best_leaf_recommendations) #list of three tensors
