@@ -484,7 +484,6 @@ class GameTree: #add owner id and t_rush
           heapq.heappop(self.heap) #pop the top
 
           self.visited.append(current)  #just to track, dw king, chat said to add for debugging and for checking stats after (like evaluation)
-      self.root = None #TO SEE WHAT HAPPENS WHEN NONE
       #return current #only doing this to test out my output function, REMOVE LATER
 
     def simulate_time_forward(self, state):
