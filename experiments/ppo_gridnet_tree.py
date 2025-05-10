@@ -263,8 +263,8 @@ class Tree_Agent(nn.Module):
         self.tree_output_a = 3  # 3 actions, 7 parameters per action
         self.tree_output_p = 7
         self.tree_output_c = self.tree_output_a * self.tree_output_p  # 21 channels for the tree output
-        self.tree_outputs = None
-        self.tree_inputs = None
+        self.samples = None
+        self.tree_out = None
 
         self.encoder = nn.Sequential(
             Transpose((0, 3, 1, 2)), # Transpose to (batch, channels, height, width)
@@ -647,6 +647,18 @@ if __name__ == "__main__":
 
     if args.Tree_Agent:
         agent = Tree_Agent(envs).to(device)
+        import zipfile
+        if os.path.exists("samples_db.pt") and os.path.exists("tree_outputs.pt"):
+            agent.samples = torch.load("samples_db.pt")
+            agent.tree_out = torch.load("tree_outputs.pt")
+        elif os.path.exists("tree_outputs.zip"):
+            with zipfile.ZipFile("tree_outputs.zip", "r") as zip_ref:
+                zip_ref.extractall(".")
+            agent.samples = torch.load("samples_db.pt")
+            agent.tree_out = torch.load("tree_outputs.pt")
+        else:
+            print("No samples_db.pt or tree_outputs.pt found. Using control model.")
+            raise FileNotFoundError("Neither samples_db.pt, tree_outputs.pt or tree_outputs.zip found.")
     else:
         agent = Agent(envs).to(device)
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)

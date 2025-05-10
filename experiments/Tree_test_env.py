@@ -36,6 +36,8 @@ if __name__ == "__main__":
             self.current_actions_ost = 21
             self.terrain_ost = 27
             self.x_dtype = None
+            self.samples = None
+            self.tree_out = None
 
             super(Agent, self).__init__()
 
@@ -265,6 +267,18 @@ if __name__ == "__main__":
         """
         # Define agent
         agent = Agent()
+        import zipfile
+        if os.path.exists("samples_db.pt") and os.path.exists("tree_outputs.pt"):
+            agent.samples = torch.load("samples_db.pt")
+            agent.tree_out = torch.load("tree_outputs.pt")
+        elif os.path.exists("tree_outputs.zip"):
+            with zipfile.ZipFile("tree_outputs.zip", "r") as zip_ref:
+                zip_ref.extractall(".")
+            agent.samples = torch.load("samples_db.pt")
+            agent.tree_out = torch.load("tree_outputs.pt")
+        else:
+            print("No samples_db.pt or tree_outputs.pt found. Using control model.")
+            raise FileNotFoundError("Neither samples_db.pt, tree_outputs.pt or tree_outputs.zip found.")
 
         batches = 1
 
