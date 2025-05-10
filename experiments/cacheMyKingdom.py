@@ -212,7 +212,7 @@ def process_chunk(start_end):
     return results
 
 if __name__ == '__main__':
-    CHUNK_SIZE = 1_000 #1000
+    CHUNK_SIZE = 100 #1000
     print("Chunk size:", CHUNK_SIZE)
     print("Number of CPU cores:", cpu_count())
 
@@ -250,7 +250,7 @@ if __name__ == '__main__':
 
     print("Multiprocessing starts now...")
     with Pool(
-        processes=cpu_count(),
+        processes=cpu_count()-2,  # leave 2 cores free for me
         initializer=_init_worker,
         initargs=(path_rates, user_db, enemy_db)
     ) as pool:
