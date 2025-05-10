@@ -22,6 +22,7 @@ from gym_microrts.envs.vec_env import MicroRTSGridModeVecEnv
 from kingdomtreeworking import bigBatch
 
 
+
 def parse_args():
     # fmt: off
     parser = argparse.ArgumentParser()
@@ -262,6 +263,8 @@ class Tree_Agent(nn.Module):
         self.tree_output_a = 3  # 3 actions, 7 parameters per action
         self.tree_output_p = 7
         self.tree_output_c = self.tree_output_a * self.tree_output_p  # 21 channels for the tree output
+        self.tree_outputs = None
+        self.tree_inputs = None
 
         self.encoder = nn.Sequential(
             Transpose((0, 3, 1, 2)), # Transpose to (batch, channels, height, width)
@@ -420,7 +423,7 @@ class Tree_Agent(nn.Module):
                 print("Shape of worker_map for owner", owner, ":", worker_map.shape)
 
 
-            returns[owner] = [scalars.cpu(), worker_map.cpu(), barracks_map.cpu(), resource_map.cpu(), base_map.cpu()]
+            returns[owner] = scalars      #, worker_map.cpu(), barracks_map.cpu(), resource_map.cpu(), base_map.cpu()]
         
         
         return returns
