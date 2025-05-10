@@ -212,7 +212,7 @@ def _worker_pair(u_e):
 
 # Main script
 if __name__ == '__main__':
-    #CHUNK_SIZE = 1000 #10_000
+    CHUNK_SIZE = 10_000 #1000
 
     # Map setup
     base_map = [
