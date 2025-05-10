@@ -210,7 +210,9 @@ def process_chunk(start_end):
     return results
 
 if __name__ == '__main__':
-    CHUNK_SIZE = 10_000 # 10_000
+    CHUNK_SIZE = 1_000 #1000
+    print("Chunk size:", CHUNK_SIZE)
+    print("Number of CPU cores:", cpu_count())
 
     base_map = [
         [0, 0, 0, 0],
