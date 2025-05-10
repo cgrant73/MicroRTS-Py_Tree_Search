@@ -203,7 +203,6 @@ def _init_worker(path_rates, user_db, enemy_db):
 # Called with (i, j) index range
 def process_chunk(start_end):
     start, end = start_end
-    print(psutil.virtual_memory())
     print("Memory usage:", psutil.virtual_memory().percent, "%")
     results = []
     for i in range(start, end):
