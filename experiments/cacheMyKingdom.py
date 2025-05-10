@@ -212,7 +212,9 @@ def _worker_pair(u_e):
 
 # Main script
 if __name__ == '__main__':
-    CHUNK_SIZE = 10_000 #1000
+    CHUNK_SIZE = 100 #1000
+    print("Chunk size:", CHUNK_SIZE)
+    print("Number of CPU cores:", cpu_count())
 
     # Map setup
     base_map = [
