@@ -19,9 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 from gym_microrts import microrts_ai
 from gym_microrts.envs.vec_env import MicroRTSGridModeVecEnv
 
-from kingdomtreeworking import bigBatch
-
-
+from findMyPair import batch_lookup_tensors
 
 def parse_args():
     # fmt: off
@@ -438,7 +436,7 @@ class Tree_Agent(nn.Module):
 
         # tree_input is a tuple of (scalars, worker_map, barracks_map, obstacle_map) for each owner
         
-        tree_vector = bigBatch(tree_input)  # (num_envs, tree_output_c)
+        tree_vector = batch_lookup_tensors(*tree_input, self.samples, self.tree_out)
         
 
         tree_output = tree_vector.repeat(self.map_shape[0], self.map_shape[1], 1, 1).permute(2,0,1,3)  # Batch, Height, Width, Channels
@@ -646,21 +644,39 @@ if __name__ == "__main__":
         eval_executor = ThreadPoolExecutor(max_workers=args.max_eval_workers, thread_name_prefix="league-eval-")
 
     if args.Tree_Agent:
+        # ALGO LOGIC: initialize agent here:
         agent = Tree_Agent(envs).to(device)
+
+        # Load tree outputs and samples_db if they exist
         import zipfile
-        if os.path.exists("samples_db.pt") and os.path.exists("tree_outputs.pt"):
-            agent.samples = torch.load("samples_db.pt")
-            agent.tree_out = torch.load("tree_outputs.pt")
-        elif os.path.exists("tree_outputs.zip"):
-            with zipfile.ZipFile("tree_outputs.zip", "r") as zip_ref:
-                zip_ref.extractall(".")
-            agent.samples = torch.load("samples_db.pt")
-            agent.tree_out = torch.load("tree_outputs.pt")
+        current_directory = os.path.dirname(__file__)
+        samples_db_path = os.path.join(current_directory,"tree_outputs", "samples_db.pt")
+        tree_outputs_path = os.path.join(current_directory,"tree_outputs", "tree_outputs.pt")
+        tree_outputs_zip_path = os.path.join(current_directory, "tree_outputs.zip")
+        if os.path.exists(samples_db_path) and os.path.exists(tree_outputs_path):
+            print("Found samples_db.pt and tree_outputs.pt in the current directory.")
+            print("Loading samples_db.pt and tree_outputs.pt...")
+            agent.samples = torch.load(samples_db_path).to(device)
+            agent.tree_out = torch.load(tree_outputs_path).to(device)
+        elif os.path.exists(tree_outputs_zip_path):
+            print("Found tree_outputs.zip in the current directory.")
+            with zipfile.ZipFile(tree_outputs_zip_path, "r") as zip_ref:
+                zip_ref.extractall(current_directory)
+                print("Current directory:", current_directory)
+            print("Extracted tree_outputs.zip.")
+            print("Loading samples_db.pt and tree_outputs.pt...")
+            print("samples_db.pt path:", samples_db_path)
+            print("tree_outputs.pt path:", tree_outputs_path)
+            agent.samples = torch.load(samples_db_path).to(device)
+            agent.tree_out = torch.load(tree_outputs_path).to(device)
         else:
-            print("No samples_db.pt or tree_outputs.pt found. Using control model.")
             raise FileNotFoundError("Neither samples_db.pt, tree_outputs.pt or tree_outputs.zip found.")
+    
     else:
+        # Load control agent here:
         agent = Agent(envs).to(device)
+
+
     optimizer = optim.Adam(agent.parameters(), lr=args.learning_rate, eps=1e-5)
     if args.anneal_lr:
         # https://github.com/openai/baselines/blob/ea25b9e8b234e6ee1bca43083f8f3cf974143998/baselines/ppo2/defaults.py#L20
