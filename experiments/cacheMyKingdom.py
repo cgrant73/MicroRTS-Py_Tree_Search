@@ -1,3 +1,6 @@
+import torch.multiprocessing as _mp
+_mp.set_sharing_strategy('file_system')
+
 import random
 import numpy as np
 from collections import defaultdict
@@ -7,6 +10,7 @@ import math
 import torch
 from collections import deque
 import copy
+
 from multiprocessing import Pool, cpu_count
 from kingdomtreeworking import GameTree
 from kingdomtreeworking import evaluate_best_leaf
