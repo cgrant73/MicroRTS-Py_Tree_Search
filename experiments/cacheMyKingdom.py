@@ -187,34 +187,31 @@ def executeTwoTrees(user_state, enemy_state, optimal_paths):
 import torch
 from multiprocessing import Pool, cpu_count
 import os
-
 # Globals for workers
 _path_rates = None
-_user_db = None
-_enemy_db = None
+_user_db    = None
+_enemy_db   = None
 
 # Called once per worker
-def _init_worker(path_rates):
+def _init_worker(path_rates, user_db, enemy_db):
     global _path_rates, _user_db, _enemy_db
     _path_rates = path_rates
-    _user_db = torch.load('user_db.pt', map_location='cpu')
-    _enemy_db = torch.load('enemy_db.pt', map_location='cpu')
+    _user_db    = user_db
+    _enemy_db   = enemy_db
 
 # Called with (i, j) index range
 def process_chunk(start_end):
     start, end = start_end
-    return [_worker_pair((_user_db[i], _enemy_db[i])) for i in range(start, end)]
+    results = []
+    for i in range(start, end):
+        u = _user_db[i]
+        e = _enemy_db[i]
+        results.append(executeTwoTrees(u, e, _path_rates))
+    return results
 
-# What each worker does
-def _worker_pair(u_e):
-    u, e = u_e
-    return executeTwoTrees(u, e, _path_rates)
-
-# Main script
 if __name__ == '__main__':
-    CHUNK_SIZE = 10_000 #1000
+    CHUNK_SIZE = 10_000 # 10_000
 
-    # Map setup
     base_map = [
         [0, 0, 0, 0],
         [0, 0, 0, 0],
@@ -227,38 +224,38 @@ if __name__ == '__main__':
         [0, 0, 0, 0],
         [0, 0, 0, 0]
     ]
-    
-    # Load data
-    samples_db = torch.load('samples_db.pt')  # shape [N, 16]
+
+    # … your pathfinding setup …
     path_rates, base_coord = pathfinding(base_map, base_map, resource_map)
-    print("Found paths and base...")
-    
-    # Slice and save once (so workers can load independently)
-    user_db = samples_db[:, :8]
-    enemy_db = samples_db[:, 8:]
-    torch.save(user_db, 'user_db.pt')
-    torch.save(enemy_db, 'enemy_db.pt')
+    print("found path and base...")
+    # Load & split once in main
+    print("Attempting to load samples")
+    samples_db = torch.load('samples_db.pt')  # [N,16]
+    user_db    = samples_db[:, :8]
+    enemy_db   = samples_db[:, 8:]
+    print("Succsefully loaded samples")
+
+    # move to shared memory so workers don’t each copy the whole thing
+    user_db.share_memory_()
+    enemy_db.share_memory_()
+
+    print("Creating chunks")
 
     N = samples_db.size(0)
-    #N = 10000 #only here to test
-
     chunks = [(i, min(i + CHUNK_SIZE, N)) for i in range(0, N, CHUNK_SIZE)]
-    all_results = []
 
-
-    print("Starting multiprocessing...")
-
+    print("Multiprocessing starts now...")
     with Pool(
         processes=cpu_count(),
         initializer=_init_worker,
-        initargs=(path_rates,)
+        initargs=(path_rates, user_db, enemy_db)
     ) as pool:
+        all_results = []
         for i, chunk_result in enumerate(pool.imap_unordered(process_chunk, chunks), 1):
             all_results.extend(chunk_result)
-            print(f"Finished chunk: {i}/{len(chunks)}")
+            print(f"Finished chunk {i}/{len(chunks)}")
 
-
+    print("Multiprocessing done, attempting to save tree_outputs...")
     tree_outputs = torch.stack(all_results, dim=0)
     torch.save(tree_outputs, "tree_outputs.pt")
     print("Saved tree_outputs.pt")
-
