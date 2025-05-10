@@ -15,6 +15,7 @@ from multiprocessing import Pool, cpu_count
 from kingdomtreeworking import GameTree
 from kingdomtreeworking import evaluate_best_leaf
 from kingdomtreeworking import get_action_recommendation
+import psutil
 
 def bfs_find_one_path(grid, base, resource_coords):
     rows, cols = len(grid), len(grid[0])
@@ -157,7 +158,7 @@ def executeTwoTrees(user_state, enemy_state, optimal_paths):
             e_current_path_rates.append(math.inf)
 
     t_rush = 22.0
-    enemy_tree = GameTree(enemy_state, {0: e_current_path_rates}, optimal_paths, 1,  t_rush, runtime_limit=0.05)
+    enemy_tree = GameTree(enemy_state, {0: e_current_path_rates}, optimal_paths, 1,  t_rush, runtime_limit=0.005)
     enemy_tree.build()
     max_mil_array_enemy = enemy_tree.get_mil_max()
     
@@ -169,7 +170,7 @@ def executeTwoTrees(user_state, enemy_state, optimal_paths):
             u_current_path_rates.append(math.inf)
 
     u_current_path_rates = optimal_paths[:user_state[1].item()]
-    our_tree = GameTree(user_state, {0: e_current_path_rates}, optimal_paths, 1,  t_rush, enemy_max_mil_arr=max_mil_array_enemy, runtime_limit=0.05)
+    our_tree = GameTree(user_state, {0: e_current_path_rates}, optimal_paths, 1,  t_rush, enemy_max_mil_arr=max_mil_array_enemy, runtime_limit=0.005)
     our_tree.build()
 
     best_leaf_recommendations = evaluate_best_leaf(our_tree, max_mil_array_enemy, t_rush, optimal_paths)
@@ -206,6 +207,7 @@ def _init_worker(path_rates, user_db, enemy_db):
 # Called with (i, j) index range
 def process_chunk(start_end):
     start, end = start_end
+    print("Memory usage:", psutil.virtual_memory().percent, "%")
     results = []
     for i in range(start, end):
         u = _user_db[i]
@@ -214,7 +216,7 @@ def process_chunk(start_end):
     return results
 
 if __name__ == '__main__':
-    CHUNK_SIZE = 1_000 #1000
+    CHUNK_SIZE = 100 #1000
     print("Chunk size:", CHUNK_SIZE)
     print("Number of CPU cores:", cpu_count())
 
@@ -252,7 +254,7 @@ if __name__ == '__main__':
 
     print("Multiprocessing starts now...")
     with Pool(
-        processes=cpu_count(),
+        processes=cpu_count()-2,  # leave 2 cores free for me
         initializer=_init_worker,
         initargs=(path_rates, user_db, enemy_db)
     ) as pool:
