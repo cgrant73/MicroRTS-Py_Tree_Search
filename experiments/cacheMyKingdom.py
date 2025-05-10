@@ -55,7 +55,7 @@ def find_all_paths_to_resources(grid, base, resource_coords): #ERROR WHEN RESOUR
     working_grid = copy.deepcopy(grid)  # to not modify original grid
     paths = []
 
-    while True: #ISSUE IS HERE: path returns with path of size 2, it counts as a path
+    while True: 
         path = bfs_find_one_path(working_grid, base, resource_coords)
         if not path:
             break  # No more paths available
