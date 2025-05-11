@@ -363,8 +363,8 @@ if __name__ == "__main__":
         print("Output of bigBatch:", batch_lookup_tensors(*agent.tree_transform(dummy_input),agent.samples,agent.tree_out))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
-        #output = agent.get_action_and_value(dummy_input)
-        #print("Forward pass successful. Output shape:", output[0].shape)
+        output = agent.get_action_and_value(dummy_input)
+        print("Forward pass successful. Output shape:", output[0].shape)
 
         
     
