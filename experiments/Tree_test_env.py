@@ -11,6 +11,7 @@ import torch.nn as nn
 
 from kingdomtreeworking import bigBatch
 from kingdomtreeworking import visualize_the_gird
+from findMyPair import batch_lookup_tensors
 
 if __name__ == "__main__":
 
@@ -36,6 +37,8 @@ if __name__ == "__main__":
             self.current_actions_ost = 21
             self.terrain_ost = 27
             self.x_dtype = None
+            self.samples = None
+            self.tree_out = None
 
             super(Agent, self).__init__()
 
@@ -90,6 +93,7 @@ if __name__ == "__main__":
             
             self.register_buffer("mask_value", torch.tensor(-1e8))
 
+
         def tree_transform(self,x):
             self.x_dtype = x.dtype  # Store the dtype of x for later use
             # for the gold value, take the boolean product of owner, base, and resource features, then sum over the map dimensions
@@ -141,7 +145,10 @@ if __name__ == "__main__":
                 base_coordinates = torch.nonzero(base_map[0,:,:], as_tuple=False)  # Get the coordinates of the base for the given owner
 
 
-                
+                if False:  # Debugging information
+                    print("Base coordinates for owner", owner, ":", base_coordinates)
+
+
                 # Initialize the worker masks for both owners
                 # These are one in the corner that contains the base and zero elsewhere
                 worker_mask = torch.zeros((x.shape[0], x.shape[1], x.shape[2]), dtype=torch.float32, device=x.device)
@@ -152,20 +159,12 @@ if __name__ == "__main__":
                     worker_mask[:, base_coordinates[0, 0]-1:, base_coordinates[0, 1]-1:] = 1.0  # Set the mask for the given owner
                 else:
                     worker_mask[:, :base_coordinates[0, 0]+2, :base_coordinates[0, 1]+2] = 1.0
-
-
                     
 
                 # Create the worker map by multiplying the worker feature map with the owner feature map for the given owner        
                 worker_map = torch.einsum('iab,iab,iab->iab', x[:, :, :, worker_idx], x[:, :, :, owner_idx], worker_mask)
-
                 attack_workers = torch.sum(torch.einsum('iab,iab,iab->iab', x[:, :, :, worker_idx], x[:, :, :, owner_idx], torch.ones_like(worker_mask)-worker_mask), (1,2))
-
                 barracks_map = map_units_owner(x, barracks_idx, owner)
-
-                if False:  # Debugging information
-                    print("Base coordinates for owner", owner, ":", base_coordinates)
-                    print("Worker coordinates for owner", owner, ":", torch.nonzero(worker_map[0,:,:], as_tuple=False))
 
 
                 light_units = torch.sum(map_units_owner(x, light_idx, owner),(1,2))
@@ -177,20 +176,21 @@ if __name__ == "__main__":
                     torch.einsum('iab,iab,iab->iab', x[:, :, :, owner_idx], x[:, :, :, barracks_idx], x[:, :, :, is_producing_idx]==0.0), (1, 2)
                 )
                 
+
                 scalars = [gold_value,workers_units,attack_workers,light_units,heavy_units,ranged_units, barracks_units, available_barracks]
                 # stack scalars to a tensor of shape (num_envs, 8)
                 scalars = torch.stack(scalars, dim=1).to(torch.float32)
 
-                # Print scalars of batch 0
-                if True:  # Debugging information
+
+                if False:  # Debugging information
                     print("Scalars for owner", owner, ":", scalars)  # Print the scalars for the first environment
-                    #print("Shape of scalars for owner", owner, ":", scalars.shape)
-                    #print("Type of elements in scalars for owner", owner, ":", scalars.dtype)
+                    print("Shape of scalars for owner", owner, ":", scalars.shape)
+                    print("Type of elements in scalars for owner", owner, ":", scalars.dtype)
                     # print shape of maps
-                    #print("Shape of worker_map for owner", owner, ":", worker_map.shape)
+                    print("Shape of worker_map for owner", owner, ":", worker_map.shape)
 
 
-                returns[owner] = [scalars.cpu(), worker_map.cpu(), barracks_map.cpu(), resource_map.cpu(), base_map.cpu()]
+                returns[owner] = scalars      #, worker_map.cpu(), barracks_map.cpu(), resource_map.cpu(), base_map.cpu()]
             
             
             return returns
@@ -201,15 +201,17 @@ if __name__ == "__main__":
             :return: tree-augmented state of shape (num_envs, height, width, channels+1)
             """
 
+
+            device = x.device  # Get the device of x
             tree_input = self.tree_transform(x)  # Transform the input
 
             # tree_input is a tuple of (scalars, worker_map, barracks_map, obstacle_map) for each owner
             
-            tree_vector = bigBatch(tree_input)  # (num_envs, tree_output_c)
+            tree_vector = batch_lookup_tensors(*tree_input, self.samples, self.tree_out)
             
 
             tree_output = tree_vector.repeat(self.map_shape[0], self.map_shape[1], 1, 1).permute(2,0,1,3)  # Batch, Height, Width, Channels
-            tree_output = tree_output.to(x.device)  # Ensure the tensor is on the same device as x
+            tree_output = tree_output.to(device)  # Ensure the tensor is on the same device as x
             tree_output = tree_output.to(x.dtype)  # Ensure the tensor has the same dtype as x
 
             if False:  # Debugging information
@@ -265,6 +267,30 @@ if __name__ == "__main__":
         """
         # Define agent
         agent = Agent()
+        import zipfile
+        current_directory = os.path.dirname(__file__)
+        samples_db_path = os.path.join(current_directory,"tree_outputs", "samples_db.pt")
+        tree_outputs_path = os.path.join(current_directory,"tree_outputs", "tree_outputs.pt")
+        tree_outputs_zip_path = os.path.join(current_directory, "tree_outputs.zip")
+        if os.path.exists(samples_db_path) and os.path.exists(tree_outputs_path):
+            print("Found samples_db.pt and tree_outputs.pt in the current directory.")
+            print("Loading samples_db.pt and tree_outputs.pt...")
+            agent.samples = torch.load(samples_db_path)
+            agent.tree_out = torch.load(tree_outputs_path)
+        elif os.path.exists(tree_outputs_zip_path):
+            print("Found tree_outputs.zip in the current directory.")
+            with zipfile.ZipFile(tree_outputs_zip_path, "r") as zip_ref:
+                zip_ref.extractall(current_directory)
+                print("Current directory:", current_directory)
+            print("Extracted tree_outputs.zip.")
+            print("Loading samples_db.pt and tree_outputs.pt...")
+            print("samples_db.pt path:", samples_db_path)
+            print("tree_outputs.pt path:", tree_outputs_path)
+            agent.samples = torch.load(samples_db_path)
+            agent.tree_out = torch.load(tree_outputs_path)
+        else:
+            print("No samples_db.pt or tree_outputs.pt found. Using control model.")
+            raise FileNotFoundError("Neither samples_db.pt, tree_outputs.pt or tree_outputs.zip found.")
 
         batches = 1
 
@@ -333,10 +359,8 @@ if __name__ == "__main__":
         print("Shape of dummy input:", dummy_input.shape)
         #print("Type of dummy input:", dummy_input.dtype)
 
-        scalars, worker_map, barracks_map, resource_map, base_map = agent.tree_transform(dummy_input)[0]
-        visualize_the_gird(worker_map[0, :, :],base_map[0, :, :],resource_map[0, :, :],barracks_map[0, :, :])  # Visualize the maps for the first environment
-
-        print("Output of bigBatch:", bigBatch(agent.tree_transform(dummy_input)))  # Test the bigBatch function with dummy input
+        scalars = agent.tree_transform(dummy_input)[0]
+        print("Output of bigBatch:", batch_lookup_tensors(*agent.tree_transform(dummy_input),agent.samples,agent.tree_out))  # Test the bigBatch function with dummy input
 
         # Forward pass through the agent
         #output = agent.get_action_and_value(dummy_input)
