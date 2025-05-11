@@ -1,10 +1,10 @@
 import torch
 
 def batch_lookup_tensors(
-    user_state: torch.Tensor,    # [B,8]
-    enemy_state: torch.Tensor,   # [B,8]
-    samples_db: torch.Tensor,    # [N,16]
-    tree_outputs: torch.Tensor,  # [N,O]
+    user_state: torch.Tensor,    #[B,8]
+    enemy_state: torch.Tensor,   #[B,8]
+    samples_db: torch.Tensor,    #[N,16]
+    tree_outputs: torch.Tensor,  #[N,O]
     q_chunk_size: int = 128,
     db_chunk_size: int = 50_000
 ) -> torch.Tensor:
@@ -50,7 +50,7 @@ def batch_lookup_tensors(
             # Update best distances and indices
             best_d2[q_start:q_end][update_mask] = min_d2[update_mask]
             best_index[q_start:q_end][update_mask] = min_idx[update_mask] + db_start
-            
+
     results = tree_outputs[best_index]  # [B,O]
     return results
 

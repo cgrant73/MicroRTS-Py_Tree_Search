@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 
 from kingdomtreeworking import bigBatch
-from kingdomtreeworking import visualize_the_gird
+from kingdomtreeworking import visualize_the_grid
 from findMyPair import batch_lookup_tensors
 
 if __name__ == "__main__":
