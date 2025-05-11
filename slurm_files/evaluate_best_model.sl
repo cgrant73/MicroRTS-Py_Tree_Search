@@ -31,4 +31,4 @@ python league.py\
     --cuda False\
     --output_path /home/grantcr/MicroRTS-Py_Tree_Search/experiments/14825472_eval.csv\
     --prod-mode True\
-    --num_matches 100
+    --num_matches 200
