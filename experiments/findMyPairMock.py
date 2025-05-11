@@ -55,24 +55,32 @@ def batch_lookup_tensors(
     return results
 
 
-# if __name__ == "__main__":
-#     # Simulated data
-#     N, O = 10, 21
-#     samples_db = torch.randn(N, 16)
-#     tree_outputs = torch.randint(0, 2, (N, O), dtype=torch.float32)
+if __name__ == "__main__":
+    N, O = 10, 21
+    samples_db = torch.randn(N, 16)
+    tree_outputs = torch.randint(0, 2, (N, O), dtype=torch.float32)
 
-#     # Example batch of user/enemy states
-#     user_state = torch.tensor([
-#         [0,1,2,3,4,1,1,0],
-#         [5,5,5,5,5,1,1,5],
-#         [2,3,1,0,4,1,1,2],
-#     ], dtype=torch.float32)
-#     enemy_state = torch.tensor([
-#         [5,4,3,2,1,0,0,5],
-#         [0,0,0,0,0,0,0,0],
-#         [2,3,1,0,4,1,1,2],
-#     ], dtype=torch.float32)
+    user_state = torch.tensor([
+        [0,1,2,3,4,1,1,0],
+        [5,5,5,5,5,1,1,5],
+        [2,3,1,0,4,1,1,2],
+    ], dtype=torch.float32)
+    enemy_state = torch.tensor([
+        [5,4,3,2,1,0,0,5],
+        [0,0,0,0,0,0,0,0],
+        [2,3,1,0,4,1,1,2],
+    ], dtype=torch.float32)
 
-#     out = batch_lookup_tensors(user_state, enemy_state, samples_db, tree_outputs)
-#     print("Output shape:", out.shape)  # should be [3,21]
-#     print(out)
+    print("User states:") 
+    for row in user_state:
+        print(row)
+
+    print("Enemy states:")
+    for row in enemy_state:
+        print(row)
+
+    print("Looking for pairs...")
+    out = batch_lookup_tensors(user_state, enemy_state, samples_db, tree_outputs)
+    print("Output shape:", out.shape)
+    print("\nOutput Tensors: \n")
+    print(out)
