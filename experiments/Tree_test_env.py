@@ -358,6 +358,7 @@ if __name__ == "__main__":
         # Test the bigBatch function with dummy input
         print("Shape of dummy input:", dummy_input.shape)
         #print("Type of dummy input:", dummy_input.dtype)
+        #print("Device of dummy input:", dummy_input.device)
 
         scalars = agent.tree_transform(dummy_input)[0]
         print("Output of bigBatch:", batch_lookup_tensors(*agent.tree_transform(dummy_input),agent.samples,agent.tree_out))  # Test the bigBatch function with dummy input
