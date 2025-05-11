@@ -4,7 +4,7 @@
 #SBATCH --error=error/%x_%j.txt               # Error file
 #SBATCH --nodes=1                        # Number of nodes
 #SBATCH --ntasks=1 --cpus-per-task=32     # 32 CPU on a single node
-#SBATCH --mem-per-cpu=20g                 # Memory request per CPU
+#SBATCH --mem-per-cpu=3g                 # Memory request per CPU
 #SBATCH --partition=short              # >12h partition
 #SBATCH --time=02:00:00                  # Time limit (hrs:min:sec)
 #SBATCH --mail-type=BEGIN,END,FAIL       # Mail events (NONE, BEGIN, END, FAIL, ALL)
